@@ -1,0 +1,237 @@
+---
+title: "Homework 2"
+author: "Benjamin Noland"
+output: pdf_document
+fontsize: 12pt
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+library(TSA)
+
+data(beersales)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 6,
+  fig.asp = 0.618,
+  out.width = "70%",
+  fig.align = "center",
+  fig.show = "hold"
+)
+```
+
+\newcommand{\var}{\mathrm{Var}}
+\newcommand{\cov}{\mathrm{Cov}}
+\newcommand{\corr}{\mathrm{Corr}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\pr}{\mathrm{P}}
+
+1. (Throughout, assume that $n > 1$, so that the expressions to be derived are
+well-defined). The ordinary least squares (OLS) estimators $\hat{\beta}_0$ and
+$\hat{\beta}_1$ of $\beta_0$ and $\beta_1$, respectively, are defined to
+minimize the loss
+$$Q(\beta_0, \beta_1)
+  = \sum_{i=1}^n [Y_{t_i} - (\beta_0 + \beta_1 t_i)]^2.$$
+First, we compute the stationary points of the loss:
+$$\begin{aligned}
+  0 &= \frac{\partial}{\partial \beta_0} Q(\beta_0, \beta_1)
+    = \sum_{i=1}^n -2[Y_{t_i} - (\beta_0 + \beta_1 t_i)] \\
+  0 &= \frac{\partial}{\partial \beta_0} Q(\beta_0, \beta_1)
+    = \sum_{i=1}^n -2t_i [Y_{t_i} - (\beta_0 + \beta_1 t_i)].
+\end{aligned}$$
+Rearranging the first equation, we get
+$$\hat{\beta}_0
+  = \frac{1}{n} \sum_{i=1}^n Y_{t_i}
+    - \hat{\beta}_1 \frac{1}{n} \sum_{i=1}^n t_i
+  = \bar{Y} - \hat{\beta}_1 \bar{t},$$
+where $\hat{\beta}_1$ is the OLS estimator of $\beta_1$, to be computed next.
+Rearranging the second equation, we get
+$$\begin{aligned}
+  \sum_{i=1}^n t_i Y_{t_i}
+    &= \sum_{i=1}^n t_i \hat{\beta}_0 + \hat{\beta}_1 \sum_{i=1}^n t_i^2 \\
+    &= \sum_{i=1}^n t_i (\bar{Y} - \hat{\beta}_1 \bar{t})
+      + \hat{\beta}_1 \sum_{i=1}^n t_i^2 \\
+    &= \bar{Y} \sum_{i=1}^n t_i - \hat{\beta}_1 \bar{t} \sum_{i=1}^n t_i
+      + \hat{\beta}_1 \sum_{i=1}^n t_i^2 \\
+    &= n\bar{Y}\bar{t} - n\hat{\beta}_1 \bar{t}^2
+      + \hat{\beta}_1 \sum_{i=1}^n t_i^2 \\
+    &= n\bar{Y}\bar{t}
+      + \hat{\beta}_1 \left ( \sum_{i=1}^n t_i^2 - n\bar{t}^2 \right ),
+\end{aligned}$$
+where we substituted the expression for $\hat{\beta}_0$ computed above.
+Therefore,
+$$\sum_{i=1}^n t_i Y_{t_i} - n\bar{Y}\bar{t}
+  = \hat{\beta}_1 \left ( \sum_{i=1}^n t_i^2 - n\bar{t}^2 \right ).$$
+This equation can be rewritten
+$$n\sum_{i=1}^n (Y_{t_i} - \bar{Y})(t_i - \bar{t})
+  = \hat{\beta}_1 n \sum_{i=1}^n (t_i - \bar{t})^2.$$
+Thus, solving for $\hat{\beta}_1$, we get
+$$\hat{\beta}_1
+  = \frac{\sum_{i=1}^n (Y_{t_i} - \bar{Y})(t_i - \bar{t})}
+      {\sum_{i=1}^n (t_i - \bar{t})^2}.$$
+Next, we need to verify that the point $(\hat{\beta}_0, \hat{\beta}_1)$ is
+indeed the unique minimizer of the loss $Q(\beta_0, \beta_1)$. We will apply the
+second derivative test. The Hessian $H(\beta_0, \beta_1)$ of $Q(\beta_0,
+\beta_1)$, is given by
+$$H(\beta_0, \beta_1)
+  = \begin{pmatrix}
+    \frac{\partial^2}{\partial \beta_0^2} Q(\beta_0, \beta_1) &
+    \frac{\partial^2}{\partial \beta_0 \beta_1} Q(\beta_0, \beta_1) \\
+    \frac{\partial^2}{\partial \beta_1 \beta_0} Q(\beta_0, \beta_1) &
+    \frac{\partial^2}{\partial \beta_1^2} Q(\beta_0, \beta_1)
+  \end{pmatrix}
+  = \begin{pmatrix}
+    2n & 2n\bar{t} \\
+    2n\bar{t} & 2\sum_{i=1}^n t_i^2
+  \end{pmatrix}.$$
+Thus $H(\beta_0, \beta_1)$ is constant in $(\beta_0, \beta_1)$. To verify that
+$H(\beta_0, \beta_1)$ is positive definite, we note that
+$$\frac{\partial^2}{\partial \beta_0^2} Q(\beta_0, \beta_1)
+  = 2n > 0$$
+and that
+$$\det H(\beta_0, \beta_1)
+  = 4n \sum_{i=1}^n t_i^2 - 4n^2\bar{t}
+  = 4n \sum_{i=1}^n (t_i - \bar{t})^2 > 0.$$
+In particular, $H(\hat{\beta}_0, \hat{\beta}_1)$ is positive definite. Therefore
+$(\hat{\beta}_0, \hat{\beta}_1)$ is a local minimum of the loss $Q(\beta_0,
+\beta_1)$. However, since $H(\beta_0, \beta_1)$ is everywhere positive definite,
+$Q(\beta_0, \beta_1)$ is strictly convex in $(\beta_0, \beta_1)$, and thus
+$(\hat{\beta}_0, \hat{\beta}_1)$ is the \emph{unique} global minimizer of
+$Q(\beta_0, \beta_1)$.
+
+2. (Cryer & Chan, Exercise 3.2)
+Let $\{e_t\}_{t=0}^\infty$ be a white noise process, and define the process
+$\{Y_t\}_{t=1}^\infty$ by $Y_t = \mu + e_t - e_{t-1}$. Let $Y_1, \ldots, Y_n$
+denote the observed time series. Then the sample mean is given by
+$$\bar{Y} = \frac{1}{n} \sum_{t=1}^n Y_t
+  = \frac{1}{n} \sum_{t=1}^n (\mu + e_t - e_{t-1})
+  = \mu + \frac{1}{n} \sum_{t=1}^n (e_t - e_{t-1})
+  = \mu + \frac{1}{n} e_n.$$
+Therefore,
+$$\var(\bar{Y}) = \var(\mu + \frac{1}{n} e_n)
+  = \frac{1}{n^2} \var(e_n)
+  = \frac{\sigma_e^2}{n^2},$$
+where $\sigma_e^2$ denotes the variance of the white noise process. Note that
+under the model $Y_t = \mu + e_t$, the sample mean variance decreases linearly
+in $n$, i.e., $\var(\bar{Y}) = \sigma_e^2 / n$ (see page 28). However, in this
+case the sample mean variance decreases quadratically in $n$.
+
+3. (Cryer & Chan, Exercise 3.3)
+Let $\{e_t\}_{t=0}^\infty$ be a white noise process, and define the process
+$\{X_t\}$ by $X_t = (e_t + e_{t-1}) / 2$. Then $\{X_t\}$ is a moving average
+process, and let $\gamma_k$ denote the autocovariance function for this process.
+Define the process $\{Y_t\}_{t=1}^\infty$ by $Y_t = \mu + e_t + e_{t-1} = \mu +
+2X_t$. Let $Y_1, \ldots, Y_n$ denote the observed time series. Then the sample
+mean is given by
+$$\bar{Y} = \frac{1}{n} \sum_{t=1}^n Y_t
+  = \frac{1}{n} \sum_{t=1}^n (\mu + 2X_t)
+  = \mu + \frac{2}{n} \sum_{t=1}^n X_t.$$
+Therefore, recalling the autocovariance structure of $\{X_t\}$ (see page 15), we
+have
+$$\begin{aligned}
+  \var(\bar{Y}) &= \var \left ( \mu + \frac{2}{n} \sum_{t=1}^n X_t \right ) \\
+    &= \frac{4}{n^2} \var \left ( \sum_{t=1}^n X_t \right ) \\
+    &= \frac{4}{n^2} \left ( \sum_{t=1}^n \var(X_t)
+      + 2\sum_{s=2}^n \sum_{t=1}^{s-1} \cov(X_s, X_t) \right ) \\
+    &= \frac{4}{n^2} \left ( \sum_{t=1}^n \gamma_0
+      + 2\sum_{s=2}^n \sum_{t=1}^{s-1} \gamma_{|t-s|} \right ) \\
+    &= \frac{4}{n^2} \left ( n \frac{1}{2} \sigma_e^2
+      + 2\sum_{s=2}^n \sum_{t=1}^{s-1} \frac{1}{4} \sigma_e^2 \right ) \\
+    &= \frac{4}{n^2}
+      \left ( \frac{n \sigma_e^2}{2} + \frac{(n-1) \sigma_e^2}{2} \right ) \\
+    &= \frac{4 \sigma_e^2}{n} - \frac{2 \sigma_e^2}{n^2}.
+\end{aligned}$$
+Note that under the model $Y_t = \mu + e_t$, the sample mean variance decreases
+linearly in $n$, i.e., $\var(\bar{Y}) = \sigma_e^2 / n$ (see page 28). However,
+from the above calculation we see that the autocovariance structure of the model
+in question introduces a term that decays quadratically in $n$.
+
+4. (Cryer & Chan, Exercise 3.6)
+    a. The time series plot (displayed below) seems to indicate a seasonal trend
+    in monthly beer sales. In addition, there appears to be an upward trend in
+    monthly beer sales averaged over a complete year from approximately 1975
+    to 1980.
+    
+        ```{r}
+        plot(
+          x = beersales,
+          type = "o",
+          main = "Monthly beer sales (1975 to 1990)",
+          ylab = "Barrels sold (millions)",
+          xaxt = "n"  # Suppress default x axis.
+        )
+        axis(1, at = 1975:1990, labels = paste0("'", 75:90))
+        ```
+
+    b. Monthly beer sales appear to be lower in the colder months than in the
+    warmer months, with the lowest sales in the middle of the winter and the
+    highest in the middle of the summer. Thus, as mentioned in part (a), there
+    _does_ appear to be a seasonal trend in the data.
+    
+        ```{r}
+        plot(
+          x = beersales,
+          type = "l",
+          main = "Monthly beer sales (1975 to 1990)",
+          ylab = "Barrels sold (millions)",
+          xaxt = "n"  # Suppress default x axis.
+        )
+        points(
+          y = beersales,
+          x = time(beersales),
+          pch = as.vector(season(beersales)),
+          cex = 0.6,
+          col = "red"
+        )
+        axis(1, at = 1975:1990, labels = paste0("'", 75:90))
+        ```
+
+    c. The following R code fits a seasonal-means model to the data, i.e., a
+    linear model with a separate dummy variable for each month:
+    
+        ```{r}
+        month. <- season(beersales)
+        model <- lm(beersales ~ month. - 1)
+        summary(model)
+        ```
+        
+        Each of the estimated coefficients in the model is the estimated mean
+        beer sales for the corresponding month (over all the years in the data
+        set). We have $R^2 = 0.995$, so that the model explains about 99.5\% of
+        the variation in the data.
+        
+        The following R code extracts the Studentized residuals from the model:
+        
+        ```{r}
+        resid <- rstudent(model)
+        head(resid)
+        ```
+    
+    <!-- -->
+    e. The following R code fits a seasonal-means plus quadratic time trend to
+    the data, i.e., a linear model with a separate dummy variable for each
+    month, and a quadratic time term:
+    
+        ```{r}
+        month. <- season(beersales)
+        time <- time(beersales)
+        model <- lm(beersales ~ month. + I(time^2) - 1)
+        summary(model)
+        ```
+        
+        For a fixed month, the quadratic time term in the model describes the
+        relationship between year and beer sales, with the coefficient for the
+        dummy variable for the corresponding month playing the role of the
+        intercept term. Thus we see that according to the model, for a fixed
+        month, monthly beer sales increase with year. Furthermore, we have $R^2
+        = 0.9979$, so that the model explains about 99.8\% of the variation in
+        the data.
+        
+        The following R code extracts the Studentized residuals from the model:
+        
+        ```{r}
+        resid <- rstudent(model)
+        head(resid)
+        ```

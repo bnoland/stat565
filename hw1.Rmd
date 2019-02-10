@@ -1,0 +1,262 @@
+---
+title: "Homework 1"
+author: "Benjamin Noland"
+output: pdf_document
+fontsize: 12pt
+---
+
+```{r setup, include=FALSE}
+library(TSA)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 6,
+  fig.asp = 0.618,
+  out.width = "70%",
+  fig.align = "center",
+  fig.show = "hold"
+)
+```
+
+\newcommand{\var}{\mathrm{Var}}
+\newcommand{\cov}{\mathrm{Cov}}
+\newcommand{\corr}{\mathrm{Corr}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\pr}{\mathrm{P}}
+
+1. (Cryer & Chan, Exercise 1.1) This plot can be reproduced using the following
+R code:
+
+    ```{r, fig.width = 5.5, out.width = "3in", fig.asp = 1}
+    data(larain)
+    plot(
+      y = larain, x = zlag(larain),
+      xlab = "Previous year inches",
+      ylab = "Inches",
+      main = "LA rainfall vs. previous year's LA rainfall"
+    )
+    ```
+    
+    The lack of linearity in the plot indicates that there is little correlation
+    between this year's rainfall amount and the previous year's.
+
+2. (Cryer & Chan, Exercise 1.3) The following function simulates a random
+process of length 48 with independent, normal values, and plots the associated
+time series plot:
+
+    ```{r}
+    set.seed(1)  # Set a random seed for reproducability.
+    
+    plot_process <- function() {
+      process <- ts(rnorm(48))
+      plot(process, type = "o")
+    }
+    
+    plot_process()
+    ```
+
+    The resulting output does appear to consist of random fluctuations about the
+    mean of the process (which is zero in this case). Performing the experiment a
+    few more times yields simular results:
+    
+    ```{r}
+    plot_process()
+    plot_process()
+    ```
+
+3. (Cryer & Chan, Exercise 1.5) The following function simulates a random
+process of length 48 with independent $t$-distributed values, each with 5
+degrees of freedom, and plots the associated time series plot, along with a
+normal Q-Q plot of the generated values:
+
+    ```{r}
+    set.seed(1)  # Set a random seed for reproducability.
+    
+    plot_process <- function() {
+      process <- ts(rt(48, 5))
+      old_par <- par(mfrow = c(1, 2))
+      plot(process, type = "o")
+      qqnorm(process)
+      qqline(process)
+      par(old_par)
+    }
+    
+    plot_process()
+    ```
+
+    The resulting time series plot does appear to consist of random fluctuations
+    about the mean of the process (which is zero in this case). Moreover, the
+    normal Q-Q plot indicates that the data are unlikely to be from a normal
+    distribution, since the tails of the empirical distribution are too heavy.
+    Performing the experiment a few more times yields similar results:
+    
+    ```{r}
+    plot_process()
+    plot_process()
+    ```
+
+4. (Cryer & Chan, Exercise 2.1)
+    a. Since $\var(X) = 9$, $\var(Y) = 4$, and $\corr(X, Y) = 1/4$, we have
+    $$\cov(X, Y) = \sqrt{\var(X) \var(Y)} \corr(X, Y) = 3/2.$$
+    Thus,
+    $$\var(X + Y) = \var(X) + \var(Y) + 2\cov(X, Y) = 16.$$
+    
+    b. Since $\var(X) = 9$, and $\cov(X, Y) = 3/2$ by part (a), we have
+    $$\cov(X, X + Y) = \cov(X, X) + \cov(X, Y) = \var(X) + \cov(X, Y) = 21/2.$$
+    
+    c. First, note that
+    $$\corr(X + Y, X - Y)
+        = \frac{\cov(X + Y, X - Y)}{\sqrt{\var(X + Y) \var(X - Y)}}.$$
+    Since $\var(X) = 9$, $\var(Y) = 4$, and by part (a), $\cov(X, Y) = 3/2$,
+    $$\var(X - Y) = \var(X) + \var(Y) - 2\cov(X, Y) = 10.$$
+    and
+    $$\begin{aligned}
+      \cov(X + Y, X - Y) &= \cov(X, X) - \cov(X, Y) + \cov(Y, X) - \cov(Y, Y) \\
+        &= \var(X) - \var(Y) = 5.
+    \end{aligned}$$
+    Thus, since $\var(X + Y) = 16$ by part (a), we get
+    $$\corr(X + Y, X - Y) = 5 / \sqrt{160}.$$
+
+5. (Cryer & Chan, Exercise 2.2) Since $\var(X) = \var(Y)$, we have
+    $$\begin{aligned}
+      \cov(X + Y, X - Y) &= \cov(X, X) - \cov(X, Y) + \cov(Y, X) - \cov(Y, Y) \\
+        &= \var(X) - \var(Y) = 0.
+    \end{aligned}$$
+
+6. (Cryer & Chan, Exercise 2.5)
+    a. Since $\{X_t\}$ is a mean-zero process, the mean function for $\{Y_t\}$
+    is given by
+    $$\tilde{\mu}_t = \E(Y_t) = 5 + 2t + \E(X_t) = 5 + 2t$$
+    for any time $t$.
+    
+    b. Since the process $\{X_t\}$ is stationary, the autocovariance function of
+    $\{Y_t\}$ is given by
+    $$\begin{aligned}
+      \tilde{\gamma}_{t,s} &= \cov(Y_t, Y_s) \\
+        &= \cov(5 + 2t + X_t, 5 + 2s + X_s) \\
+        &= \cov(X_t, X_s) \\
+        &= \cov(X_0, X_{|t-s|}) = \gamma_{|t-s|}
+    \end{aligned}$$
+    for any times $t$ and $s$.
+    
+    c. The process $\{Y_t\}$ is \emph{not} stationary, since by part (a) its
+    mean function $\tilde{\mu}_t$ is not constant with respect to time $t$.
+
+7. (Cryer & Chan, Exercise 2.6)
+    a. Define
+    $$\delta_t = \begin{cases}
+      0 & \text{if $t$ is odd} \\
+      1 & \text{if $t$ is even}
+    \end{cases}.$$
+    Then we can write $Y_t = 3\delta_t$ for any time $t$. Thus, for any time $t$
+    and lag $k$,
+    $$\begin{aligned}
+      \cov(Y_t, Y_{t-k}) &= \cov(X_t + 3\delta_t, X_{t-k} + 3\delta_{t-k}) \\
+        &= \cov(X_t, X_{t-k}) \\
+        &= \cov(X_0, X_k),
+    \end{aligned}$$
+    where the final equality is due to the fact that $\{X_t\}$ is stationary.
+    
+    b. The mean function for $\{Y_t\}$ is given by
+    $$\mu_t = \E(Y_t) = \E(X_t) + 3\delta_t$$
+    for any time $t$. Since $\{X_t\}$ is stationary, $\E(X_t)$ is constant with
+    respect to $t$, and so $\mu_t$ depends on $t$ through $\delta_t$. Thus
+    $\mu_t$ is not constant with respect to $t$, and hence $\{Y_t\}$ is
+    \emph{not} stationary.
+
+8. (Cryer & Chan, Exercise 2.10)
+    a. Since $\{X_t\}$ is a mean-zero process, the mean function for $\{Y_t\}$
+    is given by
+    $$\tilde{\mu}_t = \E(Y_t) = \mu_t + \sigma_t \E(X_t) = \mu_t$$ for any time
+    $t$. Since $\{X_t\}$ is a unit-variance process, we have
+    $$\rho_k = \corr(X_0, X_k)
+      = \frac{\cov(X_0, X_k)}{\sqrt{\var(X_k) \var(X_0)}} = \cov(X_0, X_k)$$
+    for any $k$. Therefore, since $\{X_t\}$ is stationary, the autocovariance
+    function for $\{Y_t\}$ is given by
+    $$\begin{aligned}
+      \tilde{\gamma}_{t,s} &= \cov(Y_t, Y_s) \\
+        &= \cov(\mu_t + \sigma_t X_t, \mu_s + \sigma_s X_s) \\
+        &= \sigma_t \sigma_s \cov(X_t, X_s) \\
+        &= \sigma_t \sigma_s \cov(X_0, X_{|t-s|}) \\
+        &= \sigma_t \sigma_s \rho_{|t-s|},
+    \end{aligned}$$
+    for any times $t$ and $s$.
+    
+    b. By part (a) and the fact that $\rho_0 = \corr(X_0, X_0) = 1$, the
+    autocorrelation function for $\{Y_t\}$ is given by
+    $$\tilde{\rho}_{t,s}
+      = \frac{\tilde{\gamma}_{t,s}}
+          {\sqrt{\tilde{\gamma}_{t,t} \tilde{\gamma}_{s,s}}}
+      = \frac{\sigma_t \sigma_s \rho_{|t-s|}}
+          {\sqrt{\sigma_t^2 \rho_0 \sigma_s^2 \rho_0}} = \rho_{|t-s|}$$
+    for any times $t$ and $s$. However, the process $\{Y_t\}$ is \emph{not}
+    stationary, since by part (a) its mean function $\tilde{\mu}_t$ is not
+    constant with respect to $t$.
+    
+    c. Yes. Define a process $\{Y_t\}$ as follows: let $Z \sim \mathrm{N}(0, 1)$
+    and let
+    $$Y_t = 2^t Z \quad \text{for every } t = 0, 1, 2, \ldots$$
+    Then $\E(Y_t) = 2^t\E(Z) = 0$ and $\var(Y_t) = 4^t\var(Z) = 4^t$ for any
+    time $t$. In addition,
+    $$\cov(Y_t, Y_{t-k})
+      = \cov(2^t Z, 2^{t-k} Z) = 4^t 2^{-k} \cov(Z, Z) = 4^t 2^{-k}$$
+    for any time $t$ and lag $k$ with $t \geq k$. Thus the autocovariance
+    function for the process $\{Y_t\}$ is not completely determined by the lag
+    $k$, so that $\{Y_t\}$ is \emph{not} stationary. However,
+    $$\corr(Y_t, Y_{t-k})
+      = \frac{\cov(Y_t, Y_{t-k})}{\sqrt{\var(Y_t) \var(Y_{t-k})}}
+      = \frac{4^t 2^{-k}}{4^t 2^{-k}} = 1$$
+    for any time $t$ and lag $k$ with $t \geq k$.
+
+9. (Cryer & Chan, Exercise 2.15)
+    a. The mean function for $\{Y_t\}$ is given by
+    $$\mu_t = \E(Y_t) = (-1)^t \E(X) = 0$$
+    for any time $t$.
+    
+    b. The autocovariance function for $\{Y_t\}$ is given by
+    $$\begin{aligned}
+      \gamma_{t,s} &= \cov(Y_t, Y_s) = \cov((-1)^t X, (-1)^s X) \\
+        &= (-1)^{t+s} \cov(X, X) = (-1)^{t+s} \var(X) \\
+        &= (-1)^{|t-s|} \var(X)
+    \end{aligned}$$
+    for any times $t$ and $s$. In particular, note that $\gamma_{t, s} =
+    \gamma_{0, |t-s|}$.
+    
+    c. By part (a) the mean function $\mu_t$ for $\{Y_t\}$ is constant with
+    respect to $t$, and its autocovariance function satisfies $\gamma_{t,s} =
+    \gamma_{0, |t-s|}$ (i.e., depends only on time lag), as noted in part (b).
+    Thus $\{Y_t\}$ is stationary.
+
+10. (Cryer & Chan, Exercise 2.26)
+    a. Let $\{Y_t\}$ be a stationary process. Thus $\{Y_t\}$ has constant mean
+    function $\E(Y_t) = \mu$ and autocovariance function $\gamma_k$ that is
+    completely determined by the time lag $k$. We can therefore write
+    $$\begin{aligned}
+      \Gamma_{t,s} &= \frac{1}{2} \E[(Y_t - Y_s)^2] \\
+        &= \frac{1}{2} \E[Y_t^2 - 2Y_t Y_s + Y_s^2] \\
+        &= \frac{1}{2} \E(Y_t^2) - \E(Y_t Y_s) + \frac{1}{2} \E(Y_s^2) \\
+        &= \frac{1}{2}(\gamma_0 + \mu^2) - (\gamma_{|t-s|} + \mu^2)
+          + \frac{1}{2}(\gamma_0 + \mu^2) \\
+        &= \gamma_0 - \gamma_{|t-s|}
+    \end{aligned}$$
+    for any times $t$ and $s$.
+    
+    b. Let $\{e_i\}_{i=1}^\infty$ be a sequence of iid random variables with
+    mean zero and finite variance. The associated random walk process
+    $\{Y_t\}_{t=1}^\infty$ is defined by
+    $$Y_t = \sum_{i=1}^t e_i \quad \text{for every } t = 1, 2, \ldots$$
+    Consider times $t$ and $s$. Since $\Gamma_{t,s} = \Gamma_{s,t}$, we can
+    assume without loss of generality that $t \geq s$. Then
+    $$\Gamma_{t,s} = \frac{1}{2} \E[(Y_t - Y_s)^2]
+      = \frac{1}{2}
+          \E \left[ \left( \sum_{i=1}^t e_i - \sum_{i=1}^s e_i \right)^2 \right]
+      = \frac{1}{2} \E \left[ \left( \sum_{i=s+1}^t e_i \right)^2 \right].$$
+    Since the $e_i$'s are iid and $t \geq s$, we have
+    $$\sum_{i=s+1}^t e_i \sim \sum_{i=1}^{t-s} e_i = \sum_{i=1}^{|t-s|} e_i.$$
+    Thus,
+    $$\Gamma_{t,s}
+      = \frac{1}{2} \E \left[ \left( \sum_{i=s+1}^t e_i \right)^2 \right]
+      = \frac{1}{2} \E \left[ \left( \sum_{i=1}^{|t-s|} e_i \right)^2 \right],$$
+    so that $\Gamma_{t,s}$ depends on $t$ and $s$ only through the time
+    difference $|t-s|$ (i.e., the process $\{Y_t\}$ is intrinsically
+    stationary).
