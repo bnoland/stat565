@@ -38,16 +38,16 @@ First, we compute the stationary points of the loss:
 $$\begin{aligned}
   0 &= \frac{\partial}{\partial \beta_0} Q(\beta_0, \beta_1)
     = \sum_{i=1}^n -2[Y_{t_i} - (\beta_0 + \beta_1 t_i)] \\
-  0 &= \frac{\partial}{\partial \beta_0} Q(\beta_0, \beta_1)
+  0 &= \frac{\partial}{\partial \beta_1} Q(\beta_0, \beta_1)
     = \sum_{i=1}^n -2t_i [Y_{t_i} - (\beta_0 + \beta_1 t_i)].
 \end{aligned}$$
-Rearranging the first equation, we get
+Rearranging the first equation, we find that $\hat{\beta}_0$ satisfies
 $$\hat{\beta}_0
   = \frac{1}{n} \sum_{i=1}^n Y_{t_i}
     - \hat{\beta}_1 \frac{1}{n} \sum_{i=1}^n t_i
   = \bar{Y} - \hat{\beta}_1 \bar{t},$$
 where $\hat{\beta}_1$ is the OLS estimator of $\beta_1$, to be computed next.
-Rearranging the second equation, we get
+Rearranging the second equation, we find that
 $$\begin{aligned}
   \sum_{i=1}^n t_i Y_{t_i}
     &= \sum_{i=1}^n t_i \hat{\beta}_0 + \hat{\beta}_1 \sum_{i=1}^n t_i^2 \\
@@ -120,11 +120,11 @@ case the sample mean variance decreases quadratically in $n$.
 
 3. (Cryer & Chan, Exercise 3.3)
 Let $\{e_t\}_{t=0}^\infty$ be a white noise process, and define the process
-$\{X_t\}$ by $X_t = (e_t + e_{t-1}) / 2$. Then $\{X_t\}$ is a moving average
-process, and let $\gamma_k$ denote the autocovariance function for this process.
-Define the process $\{Y_t\}_{t=1}^\infty$ by $Y_t = \mu + e_t + e_{t-1} = \mu +
-2X_t$. Let $Y_1, \ldots, Y_n$ denote the observed time series. Then the sample
-mean is given by
+$\{X_t\}_{t=1}^\infty$ by $X_t = (e_t + e_{t-1}) / 2$. Then $\{X_t\}$ is a
+moving average process, and let $\gamma_k$ denote the autocovariance function
+for this process. Define the process $\{Y_t\}_{t=1}^\infty$ by
+$Y_t = \mu + e_t + e_{t-1} = \mu + 2X_t$. Let $Y_1, \ldots, Y_n$ denote the
+observed time series. Then the sample mean is given by
 $$\bar{Y} = \frac{1}{n} \sum_{t=1}^n Y_t
   = \frac{1}{n} \sum_{t=1}^n (\mu + 2X_t)
   = \mu + \frac{2}{n} \sum_{t=1}^n X_t.$$
@@ -138,15 +138,16 @@ $$\begin{aligned}
     &= \frac{4}{n^2} \left ( \sum_{t=1}^n \gamma_0
       + 2\sum_{s=2}^n \sum_{t=1}^{s-1} \gamma_{|t-s|} \right ) \\
     &= \frac{4}{n^2} \left ( n \frac{1}{2} \sigma_e^2
-      + 2\sum_{s=2}^n \sum_{t=1}^{s-1} \frac{1}{4} \sigma_e^2 \right ) \\
+      + 2\sum_{s=2}^n \frac{1}{4} \sigma_e^2 \right ) \\
     &= \frac{4}{n^2}
       \left ( \frac{n \sigma_e^2}{2} + \frac{(n-1) \sigma_e^2}{2} \right ) \\
-    &= \frac{4 \sigma_e^2}{n} - \frac{2 \sigma_e^2}{n^2}.
+    &= \frac{4 \sigma_e^2}{n} - \frac{2 \sigma_e^2}{n^2},
 \end{aligned}$$
-Note that under the model $Y_t = \mu + e_t$, the sample mean variance decreases
-linearly in $n$, i.e., $\var(\bar{Y}) = \sigma_e^2 / n$ (see page 28). However,
-from the above calculation we see that the autocovariance structure of the model
-in question introduces a term that decays quadratically in $n$.
+where $\sigma_e^2$ denotes the variance of the white noise process. Note that
+under the model $Y_t = \mu + e_t$, the sample mean variance decreases linearly
+in $n$, i.e., $\var(\bar{Y}) = \sigma_e^2 / n$ (see page 28). However, from the
+above calculation we see that the autocovariance structure of the model in
+question introduces a term that decays quadratically in $n$.
 
 4. (Cryer & Chan, Exercise 3.6)
     a. The time series plot (displayed below) seems to indicate a seasonal trend
@@ -199,8 +200,12 @@ in question introduces a term that decays quadratically in $n$.
         
         Each of the estimated coefficients in the model is the estimated mean
         beer sales for the corresponding month (over all the years in the data
-        set). We have $R^2 = 0.995$, so that the model explains about 99.5\% of
-        the variation in the data.
+        set). As expected given the plot from part (b), the coefficients for the
+        warmer months are generally higher than those for the colder months, so
+        that according to the model, average monthly beer sales tend to be
+        higher in the warmer months than in the colder months. Furthermore, we
+        have $R^2 = 0.995$, so that the model explains about 99.5\% of the
+        variation in the data.
         
         The following R code extracts the Studentized residuals from the model:
         
@@ -222,12 +227,12 @@ in question introduces a term that decays quadratically in $n$.
         ```
         
         For a fixed month, the quadratic time term in the model describes the
-        relationship between year and beer sales, with the coefficient for the
+        relationship between year and beer sales, with the coefficient of the
         dummy variable for the corresponding month playing the role of the
         intercept term. Thus we see that according to the model, for a fixed
-        month, monthly beer sales increase with year. Furthermore, we have $R^2
-        = 0.9979$, so that the model explains about 99.8\% of the variation in
-        the data.
+        month, monthly beer sales increase (slightly) with year. Furthermore, we
+        have $R^2 = 0.9979$, so that the model explains about 99.8\% of the
+        variation in the data.
         
         The following R code extracts the Studentized residuals from the model:
         
