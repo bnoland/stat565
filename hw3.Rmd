@@ -8,6 +8,8 @@ fontsize: 12pt
 ```{r setup, include = FALSE}
 library(TSA)
 
+data(beersales)
+
 knitr::opts_chunk$set(
   echo = TRUE,
   fig.width = 6,
@@ -23,3 +25,22 @@ knitr::opts_chunk$set(
 \newcommand{\corr}{\mathrm{Corr}}
 \newcommand{\E}{\mathrm{E}}
 \newcommand{\pr}{\mathrm{P}}
+
+1. (Cryer & Chan, Exercise 3.6)
+    d.
+    
+    <!-- -->
+    f.
+
+2. (Cryer & Chan, Exercise 3.12)
+3. (Cryer & Chan, Exercise 4.2)
+4. (Cryer & Chan, Exercise 4.3)
+5. (Cryer & Chan, Exercise 4.19)
+6.
+    a.
+    b.
+    c.
+    d.
+        i.
+        ii.
+        iii.
