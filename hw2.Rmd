@@ -3,11 +3,9 @@ title: "Homework 2"
 author: "Benjamin Noland"
 output: pdf_document
 fontsize: 12pt
-editor_options: 
-  chunk_output_type: inline
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 library(TSA)
 
 data(beersales)

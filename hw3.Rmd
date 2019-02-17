@@ -1,0 +1,25 @@
+---
+title: "Homework 3"
+author: "Benjamin Noland"
+output: pdf_document
+fontsize: 12pt
+---
+
+```{r setup, include = FALSE}
+library(TSA)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 6,
+  fig.asp = 0.618,
+  out.width = "70%",
+  fig.align = "center",
+  fig.show = "hold"
+)
+```
+
+\newcommand{\var}{\mathrm{Var}}
+\newcommand{\cov}{\mathrm{Cov}}
+\newcommand{\corr}{\mathrm{Corr}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\pr}{\mathrm{P}}

@@ -5,7 +5,7 @@ output: pdf_document
 fontsize: 12pt
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 library(TSA)
 
 knitr::opts_chunk$set(
