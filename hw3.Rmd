@@ -7,6 +7,7 @@ fontsize: 12pt
 
 ```{r setup, include = FALSE}
 library(TSA)
+library(RColorBrewer)
 
 data(beersales)
 
@@ -27,20 +28,275 @@ knitr::opts_chunk$set(
 \newcommand{\pr}{\mathrm{P}}
 
 1. (Cryer & Chan, Exercise 3.6)
-    d.
+    d. The following R code plots the time series plot of the Studentized
+    residuals from the model constructed in part (c):
     
+        ```{r}
+        month. <- season(beersales)
+        model <- lm(beersales ~ month. - 1)
+        resid <- rstudent(model)
+        
+        plot(
+          y = resid,
+          x = time(beersales),
+          type = "l",
+          main = "Time series plot of Studentized residuals",
+          xlab = "Time",
+          ylab = "Studentized residual",
+          xaxt = "n"  # Suppress default x axis.
+        )
+        
+        temp_color = c(rev(brewer.pal(6, 'RdYlBu')), brewer.pal(6, 'RdYlBu'))
+        points(
+          y = resid,
+          x = time(beersales),
+          col = temp_color,
+          pch = 15
+        )
+        
+        axis(1, at = 1975:1990, labels = paste0("'", 75:90))
+        ```
+        
+        The plot of the residuals seems to indicate that the residuals have
+        non-constant mean and non-constant variance over time. In particular,
+        the plot reflects the general increase in average monthly beer sales
+        from approximately 1975 to 1980. However, the seasonal sales patterns
+        visible in the original data (high sales in warm months, low sales in
+        cold months) appear to be gone in this plot. Thus the model seems to
+        have captured these patterns in the data.
+        
     <!-- -->
-    f.
+    f. The following R code plots the time series plot of the Studentized
+    residuals from the model constructed in part (e):
+    
+        ```{r}
+        month. <- season(beersales)
+        time <- time(beersales)
+        model <- lm(beersales ~ month. + I(time^2) - 1)
+        resid <- rstudent(model)
+        
+        plot(
+          y = resid,
+          x = time(beersales),
+          type = "l",
+          main = "Time series plot of Studentized residuals",
+          xlab = "Time",
+          ylab = "Studentized residual",
+          xaxt = "n"  # Suppress default x axis.
+        )
+        
+        temp_color = c(rev(brewer.pal(6, 'RdYlBu')), brewer.pal(6, 'RdYlBu'))
+        points(
+          y = resid,
+          x = time(beersales),
+          col = temp_color,
+          pch = 15
+        )
+        
+        axis(1, at = 1975:1990, labels = paste0("'", 75:90))
+        ```
+        
+        The plot of the residuals seems to indicate that the residuals have
+        non-constant mean and non-constant variance over time. In particular, as
+        in the plot from part (d), the plot reflects the general increase in
+        average monthly beer sales from approximately 1975 to 1980, but it is
+        much less pronounced this time around. Thus it appears that the model
+        has partly captured this pattern in the data. Moreover, the observations
+        from 1975 to 1980 seem to be much more variable than those from 1980
+        onwards. However, the seasonal sales patterns visible in the original
+        data (high sales in warm months, low sales in cold months) appear to be
+        gone in this plot. Thus the model seems to have captured these patterns
+        in the data.
 
 2. (Cryer & Chan, Exercise 3.12)
-3. (Cryer & Chan, Exercise 4.2)
-4. (Cryer & Chan, Exercise 4.3)
-5. (Cryer & Chan, Exercise 4.19)
+    a. The following R code obtains the Studentized residuals from the
+    seasonal-means plus quadratic time trend model:
+    
+        ```{r}
+        month. <- season(beersales)
+        time <- time(beersales)
+        model <- lm(beersales ~ month. + I(time^2) - 1)
+        resid <- rstudent(model)
+        ```
+        
+    b. The following R code performs a runs test on the residuals, assuming the
+    residuals have a true median of zero:
+    
+        ```{r}
+        runs(resid)
+        ```
+        
+        The small $p$-value from the test indicates that we can safely reject
+        the null hypothesis of independence of the residuals. In particular, we
+        obtain a small number of runs compared to the expected numbers of runs,
+        indicating that the observations tend to hang together over time.
+
+    c. The following R code plots a correlogram for the Studentized residuals:
+    
+        ```{r}
+        acf(resid)
+        ```
+        
+        Assuming stationarity of the time series represented by the residuals,
+        the correlogram plots estimates (namely the sample autocorrelation
+        function $r_k$) of the autocorrelation function $\rho_k$ against lag
+        $k$. Under independence of the residuals, we would have $\rho_k = 0$ for
+        every $k$, and so we would expect the estimates $r_k$ to all lie within
+        two approximate standard errors of the sample autocorrelations,
+        indicated by the horizontal dashed lines in the above plot. Clearly this
+        is not the case here, indicating that the residuals are probably not
+        independent.
+        
+    d. The following R code displays a normal Q-Q plot of the Studentized
+    residuals and a histogram displaying their distribution:
+    
+        ```{r}
+        old_par <- par(mfrow = c(1, 2))
+        qqnorm(resid)
+        qqline(resid)
+        hist(resid, main = "Distribution of residuals", xlab = "Value")
+        par(old_par)
+        ```
+
+        The points on the normal Q-Q plot deviate somewhat from the straight
+        line, and so the plot residuals appear to be non-normal. This is further
+        substantiated by the histogram, which indicates clear asymmetry in the
+        distribution.
+
+3. (Cryer & Chan, Exercise 4.2) The following R functions respectively compute
+the autocorrelation function for a given MA(2) process and plot it against lag:
+
+    ```{r}
+    rho <- function(k, theta_1, theta_2) {
+      if (k == 1) {
+        (-theta_1 + theta_1 * theta_2) / (1 + theta_1^2 + theta_2^2)
+      } else if (k == 2) {
+        -theta_2 / (1 + theta_1^2 + theta_2^2)
+      } else if (k >= 3) {
+        0
+      }
+    }
+    
+    plot_rho <- function(theta_1, theta_2, k_vals) {
+      rho_vals <- sapply(k_vals, rho, theta_1, theta_2)
+      plot(x = k_vals, y = rho_vals, type = "o", xlab = "Lag", ylab = "rho_k")
+    }
+    
+    ```
+
+    a. Plot for $\theta_1 = 0.5$, $\theta_2 = 0.4$:
+    
+        ```{r}
+        plot_rho(0.5, 0.4, 1:10)
+        ```
+
+    b. Plot for $\theta_1 = 1.2$, $\theta_2 = -0.7$:
+    
+        ```{r}
+        plot_rho(1.2, -0.7, 1:10)
+        ```
+
+    c. Plot for $\theta_1 = -1$, $\theta_2 = -0.6$:
+    
+        ```{r}
+        plot_rho(-1, -0.6, 1:10)
+        ```
+
+4. (Cryer & Chan, Exercise 4.3) We have the following expression for $\rho_1$ in
+terms of the parameter $\theta$:
+$$\rho_1 = \rho_1(\theta) = \frac{-\theta}{1 + \theta^2}.$$
+We can find the critical points of $\rho_1$ by setting
+$$0 = \frac{d}{d\theta} \rho_1(\theta)
+  = \frac{\theta^2 - 1}{(1 + \theta^2)^2}.$$
+The values of $\theta$ that satisfy this equation are $\theta = -1$ and $\theta
+= 1$, and since the domain of optimization has no boundary points, these are the
+only critical points. Since we have $\rho_1(-1) = 1/2$ and $\rho_1(1) = -1/2$,
+we can verify formally using the second derivative test that
+$$\min_{\theta \in \mathbb{R}} \rho_1(\theta) = -\frac{1}{2}
+\quad \text{and} \quad
+\max_{\theta \in \mathbb{R}} \rho_1(\theta) = \frac{1}{2}.$$
+
+5. (Cryer & Chan, Exercise 4.19) The process in question can be written
+$$\begin{aligned}
+  Y_t &= e_t - 0.5 e_{t-1} + 0.25 e_{t-2} - 0.125 e_{t-3} + 0.0625 e_{t-4}
+    - 0.03125 e_{t-5} + 0.015625 e_{t-6} \\
+    &= e^t + \sum_{k=1}^6 \left ( -\frac{1}{2} \right )^k e_{t-k}.
+\end{aligned}$$
+Thus the process can be expressed as a general linear process whose coefficients
+$\Psi_k = (-1/2)^k$ form an exponentially decaying sequence.
+
 6.
-    a.
-    b.
-    c.
-    d.
-        i.
-        ii.
-        iii.
+    i. Assume that for each of the processes in question, $e_t$ is independent
+    of $Y_{t-1}$ and $Y_{t-2}$. Then to prove stationarity it suffices to show
+    that each of the solutions $x$ to the AR characteristic equation
+    $$1 - \phi_1 x - \phi_2 x^2 = 0$$
+    satisfy $|x| > 1$ (i.e., have modulus exceeding 1). We get the following for
+    each process:
+        a. The solutions are $x_1 \approx -3.08167$ and $x_2 \approx 1.08167$,
+        each of which has modulus exceeding 1. Thus the process is stationary.
+        b. The solutions are $x_1 \approx -1.06969$ and $x_2 \approx 1.86969$,
+        each of which has modulus exceeding 1. Thus the process is stationary.
+        c. The solutions are $x_1 \approx 0.75 - 0.829156 i$ and $x_1 \approx
+        0.75 + 0.829156 i$, each of which have modulus $\approx 1.11803 > 1$.
+        Thus the process is stationary.
+        d. The solutions are $x_1 \approx -0.833 - 0.986013 i$ and $x_2 \approx
+        -0.833 + 0.986013 i$, each of which have modulus $\approx 1.29078 > 1$.
+        Thus the process is stationary.
+        
+    ii. The coefficients $\Psi_j$ satisfy the recurrence
+    $$\begin{aligned}
+      \Psi_0 &= 1 \\
+      \Psi_1 &= \phi_1 \\
+      \Psi_j &= \phi_1 \Psi_{j-1} + \phi_2 \Psi_{j-2} \quad (j \geq 2).
+    \end{aligned}$$
+    The following R function uses this recurrence to compute $\Phi_j$ for any $j
+    \geq 0$:
+    
+        ```{r}
+        psi <- function(j, phi_1, phi_2) {
+          if (j == 0) {
+            1
+          } else if (j == 1) {
+            phi_1
+          } else if (j >= 2) {
+            phi_1 * psi(j - 1, phi_1, phi_2) + phi_2 * psi(j - 2, phi_1, phi_2)
+          }
+        }
+        ```
+        
+        We can now compute $\Psi_j$ ($j = 0, 1, 2, 3, 4$) for each process:
+        a.
+            ```{r}
+            sapply(0:4, psi, 0.6, 0.3)
+            ```
+        b.
+            ```{r}
+            sapply(0:4, psi, -0.4, 0.5)
+            ```
+        c.
+            ```{r}
+            sapply(0:4, psi, 1.2, -0.7)
+            ```
+        d.
+            ```{r}
+            sapply(0:4, psi, -1, -0.6)
+            ```
+    
+    iii. The Yule-Walker equations state that
+    $$\begin{aligned}
+      \rho_1 &= \phi_1 + \phi_2 \rho_1 \\
+      \rho_2 &= \phi_1 \rho_1 + \phi_2 \rho_2,
+    \end{aligned}$$
+    so that
+    $$\begin{aligned}
+      \rho_1 &= \frac{\phi_1}{1 - \phi_2} \\
+      \rho_2 &= \frac{\phi_2 (1 - \phi_2) + \phi_1^2}{1 - \phi_2}.
+    \end{aligned}$$
+    Using these expressions for $\rho_1$ and $\rho_2$, as well as the relation
+    $$\rho_k = \phi_1 \rho_{k-1} + \phi_2 \rho_{k-2} \quad (k \geq 1),$$
+    we can compute the autocorrelation function $\rho_k$ for any chosen lag $k
+    \geq 1$. The following R function does this:
+```{r}
+rho <- function(k, phi_1, phi_2) {
+}
+```
