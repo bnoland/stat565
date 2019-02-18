@@ -177,7 +177,7 @@ the autocorrelation function for a given MA(2) process and plot it against lag:
       }
     }
     
-    plot_rho <- function(theta_1, theta_2, k_vals) {
+    plot_rho <- function(k_vals, theta_1, theta_2) {
       rho_vals <- sapply(k_vals, rho, theta_1, theta_2)
       plot(x = k_vals, y = rho_vals, type = "o", xlab = "Lag", ylab = "rho_k")
     }
@@ -187,19 +187,19 @@ the autocorrelation function for a given MA(2) process and plot it against lag:
     a. Plot for $\theta_1 = 0.5$, $\theta_2 = 0.4$:
     
         ```{r}
-        plot_rho(0.5, 0.4, 1:10)
+        plot_rho(1:10, 0.5, 0.4)
         ```
 
     b. Plot for $\theta_1 = 1.2$, $\theta_2 = -0.7$:
     
         ```{r}
-        plot_rho(1.2, -0.7, 1:10)
+        plot_rho(1:10, 1.2, -0.7)
         ```
 
     c. Plot for $\theta_1 = -1$, $\theta_2 = -0.6$:
     
         ```{r}
-        plot_rho(-1, -0.6, 1:10)
+        plot_rho(1:10, -1, -0.6)
         ```
 
 4. (Cryer & Chan, Exercise 4.3) We have the following expression for $\rho_1$ in
@@ -227,8 +227,9 @@ $\Psi_k = (-1/2)^k$ form an exponentially decaying sequence.
 
 6.
     i. Assume that for each of the processes in question, $e_t$ is independent
-    of $Y_{t-1}$ and $Y_{t-2}$. Then to prove stationarity it suffices to show
-    that each of the solutions $x$ to the AR characteristic equation
+    of $Y_{t-1}, Y_{t-2}, Y_{t-3}, \ldots$. Then to prove stationarity it
+    suffices to show that each of the solutions $x$ to the AR characteristic
+    equation
     $$1 - \phi_1 x - \phi_2 x^2 = 0$$
     satisfy $|x| > 1$ (i.e., have modulus exceeding 1). We get the following for
     each process:
@@ -292,11 +293,52 @@ $\Psi_k = (-1/2)^k$ form an exponentially decaying sequence.
       \rho_1 &= \frac{\phi_1}{1 - \phi_2} \\
       \rho_2 &= \frac{\phi_2 (1 - \phi_2) + \phi_1^2}{1 - \phi_2}.
     \end{aligned}$$
-    Using these expressions for $\rho_1$ and $\rho_2$, as well as the relation
+    Using these expressions for $\rho_1$ and $\rho_2$, the fact that $\rho_0 =
+    1$, as well as the relation
     $$\rho_k = \phi_1 \rho_{k-1} + \phi_2 \rho_{k-2} \quad (k \geq 1),$$
     we can compute the autocorrelation function $\rho_k$ for any chosen lag $k
-    \geq 1$. The following R function does this:
-```{r}
-rho <- function(k, phi_1, phi_2) {
-}
-```
+    \geq 0$. The first of the following R functions computes $\rho_k$ in this
+    way; the second plots the results against lag:
+    
+        ```{r}
+        rho <- function(k, phi_1, phi_2) {
+          if (k == 0) {
+            1
+          } else if (k == 1) {
+            phi_1 / (1 - phi_2)
+          } else if (k == 2) {
+            (phi_2 * (1 - phi_2) + phi_1^2) / (1 - phi_2)
+          } else if (k >= 3) {
+            phi_1 * rho(k - 1, phi_1, phi_2) + phi_2 * rho(k - 2, phi_2, phi_2)
+          }
+        }
+        
+        plot_rho <- function(k_vals, phi_1, phi_2) {
+          rho_vals <- sapply(k_vals, rho, phi_1, phi_2)
+          plot(x = k_vals, y = rho_vals, type = "o", xlab = "Lag", ylab = "rho_k")
+        }
+        ```
+
+        a. Plot for $\phi_1 = 0.6$, $\phi_2 = 0.3$:
+        
+            ```{r}
+            plot_rho(0:20, 0.6, 0.3)
+            ```
+        
+        b. Plot for $\phi_1 = -0.4$, $\phi_2 = 0.5$:
+        
+            ```{r}
+            plot_rho(0:20, -0.4, 0.5)
+            ```
+
+        c. Plot for $\phi_1 = 1.2$, $\phi_2 = -0.7$:
+        
+            ```{r}
+            plot_rho(0:20, 1.2, -0.7)
+            ```
+
+        d. Plot for $\phi_1 = -1$, $\phi_2 = -0.6$:
+        
+            ```{r}
+            plot_rho(0:20, -1, -0.6)
+            ```
