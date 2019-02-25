@@ -28,7 +28,8 @@ knitr::opts_chunk$set(
 \phi Y_{t-1} + e_t - \theta_1 e_{t-1} - \theta_2 e_{t-2},$$ with $\phi = 0.8$,
 $\theta_1 = -0.7$, and $\theta_2 = -0.6$. In particular, note that the process
 has AR characteristic polynomial $\phi(x) = 1 - 0.8x$, which has the single root
-$x = 1.25 > 1$. Thus the process is stationary.
+$x = 1.25 > 1$. Thus, assuming $e_t$ is independent of $Y_{t-1}, Y_{t_2},
+\ldots$ for any time $t$, the process is stationary.
 
     First, we compute
     $$\E(e_t Y_t)
@@ -87,7 +88,7 @@ $x = 1.25 > 1$. Thus the process is stationary.
     \end{aligned}$$
     Thus we find that for both of the processes in question, $\rho_1 = -5/38$,
     $\rho_2 = -3/19$, and $\rho_k = 0$ for every $k > 2$. The two processes
-    therefore have the same autocorrelation structure.
+    therefore have the same autocorrelation function.
     
     b. The process with $\theta_1 = \theta_2 = 1/6$ has MA characteristic
     polynomial $\theta(x) = 1 - (1/6)x - (1/6)x^2$, which has roots $x = -3, 2$.
@@ -101,6 +102,208 @@ $x = 1.25 > 1$. Thus the process is stationary.
         MA($q$) process with a given autocorrelation function.
 
 3. (Cryer & Chan, Exercise 4.21)
-4.
-5. (Cryer & Chan, Exercise 5.1)
+    a. For any time $t$ and lag $k$, we have
+    $$\begin{aligned}
+      \gamma_k &= \cov(Y_t, Y_{t-k}) \\
+        &= \E[(e_{t-1} - e_{t-2} + 0.5e_{t-3})
+            (e_{t-k-1} - e_{t-k-2} + 0.5e_{t-k-3}) \\
+        &= \E(e_{t-1} e_{t-k-1}) - \E(e_{t-2} e_{t-k-1})
+            - \E(e_{t-2} e_{t-k-2}) \\
+            &\quad + 0.5 \E(e_{t-3} e_{t-k-1}) - 0.5 \E(e_{t-3} e_{t-k-2})
+            + 0.25 \E(e_{t-3} e_{t-k-3}).
+    \end{aligned}$$
+    In particular,
+    $$\begin{aligned}
+      \gamma_0 &= \sigma_e^2 - \sigma_e^2 + 0.25 \sigma_e^2 = 0.25 \sigma_e^2 \\
+      \gamma_1 &= -\sigma_e^2 - 0.5 \sigma_e^2 = -1.5 \sigma_e^2 \\
+      \gamma_2 &= 0.5 \sigma_e^2 \\
+      \gamma_k &= 0 \quad \text{for every $k > 2$}.
+    \end{aligned}$$
+    
+    b. Since the elements of the white noise process $\{e_t\}$ are iid by
+    definition, we have
+    $$Y_t = e_{t-1} - e_{t-2} + 0.5e_{t-3}
+      \sim e_t - e_{t-1} + 0.5e_{t-2} = W_t.$$
+    Thus the process $\{W_t\}$ is MA(2), i.e., ARMA(0, 2), and satisfies $W_t
+    \sim Y_t$ for every time $t$.
+
+4. For each of the processes $\{Y_t\}$ in this problem, assume that $e_t$ is
+independent of $Y_{t-1}, Y_{t-2}, \ldots$ for any time $t$.
+    a.
+        i. This process has AR characteristic polynomial $\phi(x) = 1 + 0.2x -
+        0.48x^2$, which has roots $x_1 \approx -1.25, x_2 \approx 1.67$, each of
+        which has modulus $> 1$, and so the process is stationary. The process
+        has MA characteristic polynomial $\theta(x) = 1$, which has no roots,
+        and so the process is (trivially) invertible.
+        
+        ii. This process has AR characteristic polynomial $\phi(x) = 1 + 0.6x$,
+        which has the single root $x \approx 1.67$, which has modulus $> 1$, and
+        so the process is stationary. The process has MA characteristic
+        polynomial $\theta(x) = 1 + 1.2x$, which has the single root $x \approx
+        -0.83$, which has modulus $\leq 1$, and so the process is not
+        invertible.
+        
+        iii. This process has AR characteristic polynomial $\phi(x) = 1 + 1.8x +
+        0.81x^2$, which has the single root $x \approx -1.11$, which has modulus
+        $> 1$, and so the process is stationary. The process has MA
+        characteristic polynomial $\theta(x) = 1$, which has no roots, and so
+        the process is (trivially) invertible.
+        
+        iv. This process has AR characteristic polynomial $\phi(x) = 1 + 1.6x$,
+        which has the single root $x \approx -0.625$, which has modulus $\leq
+        1$, and so the process is not stationary. The process has MA
+        characteristic polynomial $\theta(x) = 1 - 0.4x$, which has the single
+        root $x = 2.5$, which has modulus $> 1$, and so the process is
+        invertible.
+    
+    b. Part (a) showed that processes (i)-(iii) are stationary, while (iv) is
+    not. The following R function plots the autocorrelation function for a
+    specified ARMA process:
+    
+        ```{r}
+        plot_arma_acf <- function(ar = numeric(), ma = numeric()) {
+          # Negate the MA coefficients to adhere to the book's convention.
+          acf <- ARMAacf(ar, -ma, lag.max = 10)
+          plot(x = names(acf), y = acf, type = "h", xaxt = "n",
+               xlab = "Lag", ylab = "ACF")
+          abline(h = 0, lty = 3)
+          axis(1, at = names(acf))
+        }
+        ```
+        
+        The graphs below display the autocorrelation function for each of the
+        processes (i)-(iii):
+        i.
+            ```{r}
+            plot_arma_acf(ar = c(-0.2, 0.48))
+            ```
+
+        ii.
+            ```{r}
+            plot_arma_acf(ar = c(-0.6), ma = c(-1.2))
+            ```
+
+        iii.
+            ```{r}
+            plot_arma_acf(ar = c(-1.8, -0.81))
+            ```
+
+    c. Part (a) showed that processes (i)-(iii) are stationary, while (iv) is
+    not. The following R function computes the coefficients $\Psi_j$ ($j = 0, 1,
+    2, 3$) in the general linear process representation of a given ARMA process
+    with $p \leq 2$:
+    
+        ```{r}
+        psi <- function(j, phi, theta) {
+          if (j == 0) {
+            1
+          } else if (j == 1) {
+            -theta[1] + phi[1]
+          } else if (j == 2 || j == 3) {
+            -theta[j] + phi[2] * psi(j - 2, phi, theta)
+              + phi[1] * psi(j - 1, phi, theta)
+          }
+        }
+        ```
+
+        We get the following values for the coefficients $\Psi_j$ ($j = 0, 1, 2,
+        3$) for the processes (i)-(iii):
+        i.
+            ```{r}
+            sapply(0:3, psi, phi = c(-0.2, 0.48), theta = rep(0, 3))
+            ```
+            
+        ii.
+            ```{r}
+            sapply(0:3, psi, phi = c(-0.6, 0), theta = c(-1.2, 0, 0))
+            ```
+            
+        iii.
+            ```{r}
+            sapply(0:3, psi, phi = c(-1.8, -0.81), theta = rep(0, 3))
+            ```
+
+5. (Cryer & Chan, Exercise 5.1) For each of the processes $\{Y_t\}$ in this
+problem, assume that $e_t$ is independent of $Y_{t-1}, Y_{t-2}, \ldots$ for any
+time $t$.
+    a. The AR characteristic polynomial for this process is $\phi(x) = 1 - x +
+    0.25x^2$, which has the single root $x = 2$, which has modulus $> 1$, and so
+    the process is stationary. The process has MA characteristic polynomial
+    $\theta(x) = 1 - 0.1x$, which has the single root $x = 10$, which has
+    modulus $> 1$, and so the process is invertible. So $\{Y_t\}$ is an
+    ARMA(2, 1) process, i.e., an ARIMA(2, 0, 1) process.
+    
+    b. The AR characteristic polynomial for this process is $\phi(x) = 1 - 2x +
+    x^2$, which has the single root $x = 1$. Thus the process is not stationary.
+    We can rewrite the process as
+    $$Y_t - Y_{t-1} = Y_{t-1} - Y_{t-2} + e_t$$
+    or equivalently,
+    $$\nabla Y_t = \nabla Y_{t-1} + e_t.$$
+    This differenced process $\{\nabla Y_t\}$ has AR characteristic polynomial
+    $\phi(x) = 1 - x$, which has the single root $x = 1$, and so the process is
+    not stationary. Differencing again, we get
+    $$\nabla Y_t - \nabla Y_{t-1} = e_t$$
+    or equivalently,
+    $$\nabla^2 Y_t = e_t.$$
+    The process $\{\nabla^2 Y_t\}$ is simply white noise, i.e., an ARMA(0, 0)
+    process, and so is stationary and (trivially) invertible. Thus $\{Y_t\}$ is
+    an ARIMA(0, 2, 0) process.
+    
+    c. This process has AR characteristic polynomial $\phi(x) = 1 - 0.5x +
+    0.5x^2$, which has roots $x_1 \approx 0.5 - 1.32i, x_2 \approx 0.5 + 1.32i$,
+    each of which has modulus $\approx 1.41 > 1$, so that the process is
+    stationary. The process has MA characteristic polynomial $\theta(x) = 1 -
+    0.5x + 0.25x^2$, which has roots $x_1 \approx 1 - 1.73i, x_2 \approx 1 +
+    1.73i$, each of which has modulus $\approx 2 > 1$, so that the process is
+    invertible. Thus $\{Y_t\}$ is an ARMA(2, 2) process, i.e., an ARIMA(2, 0, 2)
+    process.
+
 6. (Cryer & Chan, Exercise 5.4)
+    a. Assume without loss of generality that $t \geq s$. The autocovariance
+    function of $\{Y_t\}$ is given by
+    $$\gamma_{t, s} = \cov(Y_t, Y_s)
+      = \cov(A + Bt + X_t, A + Bs + X_s)
+      = \cov(X_t, X_s)
+      = s\sigma_e^2,$$
+    which is not a function of the lag $(t - s)$ alone. Therefore $\{Y_t\}$ is
+    not stationary.
+    
+    b. The random walk process $\{X_t\}$ is given by
+    $$X_t = \sum_{i=1}^t e_t,$$
+    where $\{e_t\}$ is a white noise process. The process $\{\nabla Y_t\}$ is
+    therefore given by
+    $$\nabla Y_t = Y_t - Y_{t-1}
+      = (A + Bt + X_t) - (A + B(t - 1) + X_{t-1})
+      = B + e_t.$$
+    Its mean function is therefore given by
+    $$\mu_t = \E(\nabla Y_t) = B,$$
+    which is constant in $t$. Moreover, its autocovariance function is given by
+    $$\gamma_{t, s} = \cov(\nabla Y_t, \nabla Y_s)
+      = \cov(B + e_t, B + e_s)
+      = \cov(e_t, e_s) = 0,$$
+    which is a (constant) function of the lag $(t - s)$. Thus $\{\nabla Y_t\}$
+    is stationary.
+    
+    c. Assume without loss of generality that $t \geq s$. Then, since $A$ and
+    $B$ are independent of $\{X_t\}$,
+    $$\begin{aligned}
+      \gamma_{t, s} &= \cov(Y_t, Y_s) \\
+        &= \cov(A + Bt + X_t, A + Bs + X_s) \\
+        &= \cov(A + Bt, A + Bs) + \cov(X_t, X_s) \\
+        &= \var(A) + ts\var(B) + 2\cov(A, B) + \cov(X_t, X_s) \\
+        &= \var(A) + ts\var(B) + 2\cov(A, B) + s\sigma_e^2.
+    \end{aligned}$$
+    Thus $\gamma_{t, s}$ is not a function of the lag $(t - s)$ alone, and so
+    $\{Y_t\}$ is not stationary.
+    
+    d. As in part (b), the process $\{\nabla Y_t\}$ is given by
+    $$\nabla Y_t = B + e_t.$$
+    Its mean function is therefore given by
+    $$\mu_t = \E(Y_t) = \E(B),$$
+    which is a constant function of $t$. Moreover, its autocovariance function
+    is given by
+    $$\gamma_{t, s} = \cov(\nabla Y_t, \nabla Y_s)
+      = \var(B) + \cov(e_t, e_s)
+      = \var(B),$$
+    which is a (constant) function of the lag $(t - s)$. Thus $\{\nabla Y_t\}$
+    is stationary.
