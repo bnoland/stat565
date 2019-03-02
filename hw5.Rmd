@@ -92,29 +92,95 @@ knitr::opts_chunk$set(
         same.
 
 3. (Cryer & Chan, Exercise 5.14)
-    a.
-```{r, fig.asp = 1, out.width = "60%"}
-BoxCox.ar(larain)
-```
+    a. The following R code generates a plot of log-likelihood against
+    $\lambda$.
+    
+        ```{r, fig.asp = 1, out.width = "60%"}
+        BoxCox.ar(larain)
+        ```
 
-    b.
-```{r}
-lambda <- 0.25
-transformed <- (larain^lambda - 1) / lambda
-qqnorm(transformed)
-qqline(transformed)
-```
+        The vertical dashed lines denote a 95\% confidence interval for
+        $\lambda$. In particular, from the plot we see that the value $\lambda =
+        0.25$ lies within this confidence interval. For the sake of potential
+        interpretability, we will take this to be the value of $\lambda$ for the
+        power transformation.
 
-    c.
-```{r}
-plot(transformed, type = "o")
-```
+    b. The following R code produces two plots: the left plot is a normal Q-Q
+    plot of the original (untransformed) data, and the right plot is one of the
+    transformed data.
+    
+        ```{r}
+        lambda <- 0.25
+        transformed <- (larain^lambda - 1) / lambda
+        
+        old_par <- par(mfrow = c(1, 2))
+        qqnorm(larain, main = "Original data")
+        qqline(larain)
+        
+        qqnorm(transformed, main = "Transformed data")
+        qqline(transformed)
+        par(old_par)
+        ```
 
-    d.
-```{r}
-plot(y = transformed, x = zlag(transformed))
-```
+        The normal Q-Q plot of the transformed data adheres very closely to the
+        theoretical Q-Q plot, indicated by the solid black line. Thus, in
+        contrast with the original data, the transformed data appear to be
+        normal.
 
+    c. The following R code produces time series plots of both the original
+    (untransformed) data and the transformed data:
+    
+        ```{r}
+        plot(larain, type = "o", main = "Original data",
+             xlab = "Year", ylab = "Inches")
+        plot(transformed, type = "o", main = "Transformed data",
+             xlab = "Year", ylab = "Inches")
+        ```
+
+        Notice that the correlations between the data points appear to be
+        similar in both plots.
+
+    d. The following R code plots $Y_t$ vs. $Y_{t-1}$ for both the original
+    (untransformed) data and the transformed data.
+    
+        ```{r}
+        old_par <- par(mfrow = c(1, 2))
+        plot(y = larain, x = zlag(larain), main = "Original data",
+             xlab = "Previous year inches", ylab = "Inches")
+        plot(y = transformed, x = zlag(transformed), main = "Transformed data",
+             xlab = "Previous year inches", ylab = "Inches")
+        par(old_par)
+        ```
+
+        Both plots seem to indicate a lack of correlation between $Y_t$ and
+        $Y_{t-1}$. Moreover, we should not expect the transformation to change
+        the dependence between data points in this series. This is a consequence
+        of the following fact: if $Y_1, \ldots, Y_n$ are random variables and
+        $g$ is a (measurable) function, then $g(Y_1), \ldots, g(Y_n)$ are random
+        variables, and they are mutually independent if and only if $Y_1,
+        \ldots, Y_n$ are mutually independent. In this case, $Y_1, \ldots, Y_n$
+        are elements of the time series, and $g(x) = (x^\lambda - 1) / \lambda$,
+        where $\lambda = 0.25$.
 
 4.
-5.
+5. The following R function generates $n$ observations from the MA(3) process in
+question using Gaussian noise:
+
+    ```{r}
+    set.seed(1)  # Set a random seed for reproducability
+    
+    sample_process <- function(n) {
+      wn <- ts(rnorm(n), start = -2, end = n)
+      process <- wn - 0.7 * zlag(wn, 1) - 0.5 * zlag(wn, 2) - 0.6 * zlag(wn, 3)
+      process <- window(process, start = 1)  # Scrap times < 1
+      process
+    }
+    ```
+    
+    The following is a time series plot of the the resulting simulated data for
+    $n = 500$:
+    
+    ```{r, out.width = "90%"}
+    plot(sample_process(500), type = "l", main = "Simulated process",
+         ylab = "Value", lwd = 0.5)
+    ```
