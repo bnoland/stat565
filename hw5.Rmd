@@ -7,6 +7,10 @@ fontsize: 12pt
 
 ```{r setup, include = FALSE}
 library(TSA)
+library(RColorBrewer)
+
+data(airpass)
+data(larain)
 
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -26,6 +30,91 @@ knitr::opts_chunk$set(
 
 1. (Cryer & Chan, Exercise 5.2)
 2. (Cryer & Chan, Exercise 5.13)
+    a. The following R code produces a time series plot of the data:
+    
+        ```{r}
+        temp_color = c(rev(brewer.pal(6, 'RdYlBu')), brewer.pal(6, 'RdYlBu'))
+        
+        plot(airpass, ylab = "Flights", type = "l")
+        points(y = airpass, x = time(airpass), col = temp_color, pch = 15)
+        ```
+    
+        The plot seems to indicate a strong seasonal trend in the time series,
+        with more flights in the warmer months than in the colder months.
+        Moreover, the mean number of flights per year is steadily increasing
+        over the whole time span of the series, as well as the variability in
+        monthly flights within a given year -- later years display considerably
+        more variability than earlier years in the series.
+        
+    b. The following R code produces a time series plot of the log-transformed
+    series:
+    
+        ```{r}
+        plot(log(airpass), ylab = "log(Flights)", type = "l")
+        points(y = log(airpass), x = time(airpass), col = temp_color, pch = 15)
+        ```
+
+        The log transformation seems to have considerably dampened the yearly
+        variability in the series. However, as in the untransformed case, the
+        yearly means of the transformed data are steadily increasing, and the
+        series displays the same seasonal trend.
+        
+    c. The following R code produces a time series plot of the differences of
+    the log-transformed data:
+    
+        ```{r}
+        diff_log <- diff(log(airpass))
+        plot(diff_log, ylab = "Difference of log(Flights)", type = "l")
+        points(y = diff_log, x = time(diff_log), col = temp_color, pch = 15)
+        ```
+        
+        Next, we have a time series plot of the (fractional) relative
+        differences:
+        
+        ```{r}
+        rel_change <- (airpass / zlag(airpass)) - 1
+        plot(rel_change, ylab = "Relative change", type = "l")
+        points(y = rel_change, x = time(rel_change), col = temp_color, pch = 15)
+        ```
+        
+        The two plots seem to display the same, relatively stable trend. Assuming
+        the true model is of the form
+        $$Y_t = (1 + X_t) Y_{t-1},$$
+        with $|X_t|$ small for every $t$, then
+        $$\nabla \log Y_t
+          = \log \left( \frac{Y_t}{Y_{t-1}} \right)
+          = \log(1 + X_t) \approx X_t$$
+        for every $t$. Moreover,
+        $$\frac{Y_t - Y_{t-1}}{Y_{t-1}}
+          = \frac{Y_t}{Y_{t-1}} - 1
+          = (1 + X_t) - 1 = X_t.$$
+        Thus, under this model, we would expect the two plots to look about the
+        same.
+
 3. (Cryer & Chan, Exercise 5.14)
+    a.
+```{r, fig.asp = 1, out.width = "60%"}
+BoxCox.ar(larain)
+```
+
+    b.
+```{r}
+lambda <- 0.25
+transformed <- (larain^lambda - 1) / lambda
+qqnorm(transformed)
+qqline(transformed)
+```
+
+    c.
+```{r}
+plot(transformed, type = "o")
+```
+
+    d.
+```{r}
+plot(y = transformed, x = zlag(transformed))
+```
+
+
 4.
 5.
