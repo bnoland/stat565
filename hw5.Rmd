@@ -163,24 +163,47 @@ knitr::opts_chunk$set(
         where $\lambda = 0.25$.
 
 4.
-5. The following R function generates $n$ observations from the MA(3) process in
+5. The following R code generates $n = 100$ observations from the MA(3) process in
 question using Gaussian noise:
 
     ```{r}
     set.seed(1)  # Set a random seed for reproducability
     
-    sample_process <- function(n) {
-      wn <- ts(rnorm(n), start = -2, end = n)
-      process <- wn - 0.7 * zlag(wn, 1) - 0.5 * zlag(wn, 2) - 0.6 * zlag(wn, 3)
-      process <- window(process, start = 1)  # Scrap times < 1
-      process
-    }
+    # sample_process <- function(n) {
+    #   wn <- ts(rnorm(n), start = -2, end = n)
+    #   process <- wn - 0.7 * zlag(wn, 1) - 0.5 * zlag(wn, 2) - 0.6 * zlag(wn, 3)
+    #   process <- window(process, start = 1)  # Scrap times < 1
+    #   process
+    # }
+    
+    #process <- sample_process(100)
+    process <- arima.sim(n = 100, model = list(ma = -c(0.7, 0.5, 0.6)))
     ```
     
-    The following is a time series plot of the the resulting simulated data for
-    $n = 500$:
+    The following is a time series plot of the the resulting simulated data:
     
-    ```{r, out.width = "90%"}
-    plot(sample_process(500), type = "l", main = "Simulated process",
-         ylab = "Value", lwd = 0.5)
+    ```{r}
+    plot(process, type = "o", main = "Simulated process", ylab = "Value")
     ```
+
+        i.
+```{r}
+# r_k <- function(k, process) {
+#   n <- length(process)
+#   if (n < k + 1) {
+#     return(0)
+#   } else {
+#     mu <- mean(process)
+#     head <- window(process, end = n - k)
+#     tail <- window(process, start = k + 1)
+#     top <- sum((head - mu) * (tail - mu))
+#     bottom <- sum((process - mu)^2)
+#     top / bottom
+#   }
+# }
+# 
+# process <- sample_process(100)
+# r_k(5, process)
+
+acf(process, plot = FALSE)$acf[[4]]
+```
