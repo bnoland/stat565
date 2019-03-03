@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
   fig.asp = 0.618,
   out.width = "70%",
   fig.align = "center",
-  fig.show = "hold"
+  fig.show = "hold",
+  eval = TRUE
 )
 ```
 
@@ -29,6 +30,53 @@ knitr::opts_chunk$set(
 \newcommand{\pr}{\mathrm{P}}
 
 1. (Cryer & Chan, Exercise 5.2)
+    a. We have
+    $$\nabla Y_t = Y_t - Y_{t-1} = 3 + e_t - 0.75 e_{t-1}.$$
+    Therefore $\{\nabla Y_t\}$ is an MA(1) process, hence stationary. Its MA
+    characteristic polynomial is $\theta(x) = 1 - 0.75x$, which has root $x =
+    4/3 > 1$, so that the process is invertible.
+    
+        Since $\{e_t\}$ is a (mean zero) white noise process, we get
+        $$\E(\nabla Y_t) = \E(3 + e_t - 0.75 e_{t-1}) = 3,$$
+        and
+        $$\begin{aligned}
+        \var(\nabla Y_t) &= \var(3 + e_t - 0.75 e_{t-1}) \\
+          &= \var(e_t) + 0.75^2 \var(e_{t-1}) \\
+          &= \sigma_e^2 + 0.75^2 \sigma_e^2 \\
+          &= \frac{25}{16} \sigma_e^2,
+        \end{aligned}$$
+        where $\sigma_e^2$ denotes the variance of the white noise process
+        $\{e_t\}$.
+    
+    b. We have
+    $$\begin{aligned}
+    \nabla Y_t &= Y_t - Y_{t-1} \\
+      &= 10 + 0.25(Y_{t-1} - Y_{t-2}) + e_t - 0.1e_{t-1} \\
+      &= 10 + 0.25 \nabla Y_{t-1} + e_t - 0.1e_{t-1}.
+    \end{aligned}$$
+    The AR characteristic polynomial of this process is $\phi(x) = 1 - 0.25x$,
+    which has root $x = 4 > 1$, so that the process is stationary. Moreover, its
+    MA characteristic polynomial $\theta(x) = 1 - 0.1x$ has root $x = 10 > 1$,
+    and so the process is invertible. We therefore see that $\{\nabla Y_t\}$ is
+    an ARMA(1, 1) process.
+    
+        Note that $\{e_t\}$ is a (mean zero) white noise process. Furthermore,
+        since $\{\nabla Y_t\}$ is stationary, its mean $\mu$ is constant in $t$.
+        Therefore,
+        $$\E(\nabla Y_t) = \E(10 + 0.25 \nabla Y_{t-1} + e_t - 0.1e_{t-1})
+          = \mu = 10 + 0.25\mu,$$
+        so that $\mu = 40/3$. Using the expression for $\gamma_0$ for a
+        stationary ARMA(1, 1) process (see page 78), we get
+        $$\begin{aligned}
+        \var(\nabla Y_t) &= \var(10 + 0.25 \nabla Y_{t-1} + e_t - 0.1e_{t-1}) \\
+          &= \var(0.25 \nabla Y_{t-1} + e_t - 0.1e_{t-1}) \\
+          &= \gamma_0 \\
+          &= \frac{1 - 2(0.25)(0.1) + 0.1^2}{1 - 0.25^2} \sigma_e^2 \\
+          &= \frac{128}{125} \sigma_e^2,
+        \end{aligned}$$
+        where $\sigma_e^2$ denotes the variance of the white noise process
+        $\{e_t\}$.
+
 2. (Cryer & Chan, Exercise 5.13)
     a. The following R code produces a time series plot of the data:
     
@@ -162,21 +210,44 @@ knitr::opts_chunk$set(
         are elements of the time series, and $g(x) = (x^\lambda - 1) / \lambda$,
         where $\lambda = 0.25$.
 
-4.
-5. The following R code generates $n = 100$ observations from the MA(3) process in
-question using Gaussian noise:
+4. Bartlett's Theorem states that, subject to some regularity conditions (which
+are satisified for any stationary ARMA process -- see page 110 of the text), the
+joint distribution
+$$(\sqrt{n} (r_1 - \rho_1), \ldots, \sqrt{n} (r_m - \rho_m))
+  \overset{\mathcal{D}}\longrightarrow \mathrm{N}_m(0, C),$$
+where $C = (c_{ij})$ is an $m \times m$ matrix defined by
+<!-- TODO: For whatever reason, pandoc doesn't seem to like this equation being
+split over multiple lines... -->
+$$c_{ij} = \sum_{k=-\infty}^\infty (\rho_{k+i}\rho_{k+j} + \rho_{k-i}\rho_{k+j} - 2\rho_i\rho_k\rho_{k+j} - 2\rho_j\rho_k\rho_{k+i} + 2\rho_i\rho_j\rho_k^2).$$
+    i. In particular, for any $m \geq 1$, we can apply Bartlett's Theorem to get
+    the asymptotic marginal distribution of $r_m$:
+    $$\sqrt{n} (r_m - \rho_m)
+      \overset{\mathcal{D}}\longrightarrow \mathrm{N}(0, c),$$
+    where
+    <!-- TODO: For whatever reason, pandoc doesn't seem to like this equation
+    being split over multiple lines... -->
+    $$c = \sum_{k=-\infty}^\infty (\rho_{k+1}^2 + \rho_{k-1}\rho_{k+1} - 4\rho_1\rho_k\rho_{k+1} - 2\rho_1^2\rho_k^2).$$
+    For a white noise process, $\rho_0 = 1$ and $\rho_k = 0$ for every $k \neq
+    0$, and so this expression reduces to $c = \rho_0^2 = 1$. Thus, for large
+    $n$, since $\rho_m = 0$, $r_m$ is approximately distributed as N($0, 1/n$).
+    
+    ii. Let $i, j \geq 1$, with $i \neq j$. Then, for a white noise process,
+    $c_{ij} = 0$. Applying Bartlett's Theorem to compute the asymptotic marginal
+    distribution of $(r_i, r_j)$, we conclude that for large $n$, $(r_i, r_j)$
+    is approximately $\mathrm{N}_2(\rho, C / n)$, where $\rho = (\rho_1,
+    \rho_2)$ and $C$ is the $2 \times 2$ matrix
+    $$C = \begin{pmatrix}
+      c_{ii} & c_{ij} \\
+      c_{ij} & c_{jj}
+    \end{pmatrix}.$$
+    Thus, since $c_{ij} = 0$, we see that $r_i$ and $r_j$ are approximately
+    uncorrelated for large $n$.
+
+5. The following R code generates $n = 100$ observations from the MA(3) process
+in question using Gaussian noise:
 
     ```{r}
     set.seed(1)  # Set a random seed for reproducability
-    
-    # sample_process <- function(n) {
-    #   wn <- ts(rnorm(n), start = -2, end = n)
-    #   process <- wn - 0.7 * zlag(wn, 1) - 0.5 * zlag(wn, 2) - 0.6 * zlag(wn, 3)
-    #   process <- window(process, start = 1)  # Scrap times < 1
-    #   process
-    # }
-    
-    #process <- sample_process(100)
     process <- arima.sim(n = 100, model = list(ma = -c(0.7, 0.5, 0.6)))
     ```
     
@@ -186,24 +257,71 @@ question using Gaussian noise:
     plot(process, type = "o", main = "Simulated process", ylab = "Value")
     ```
 
-        i.
-```{r}
-# r_k <- function(k, process) {
-#   n <- length(process)
-#   if (n < k + 1) {
-#     return(0)
-#   } else {
-#     mu <- mean(process)
-#     head <- window(process, end = n - k)
-#     tail <- window(process, start = k + 1)
-#     top <- sum((head - mu) * (tail - mu))
-#     bottom <- sum((process - mu)^2)
-#     top / bottom
-#   }
-# }
-# 
-# process <- sample_process(100)
-# r_k(5, process)
-
-acf(process, plot = FALSE)$acf[[4]]
-```
+    i. The following computes the sample autocorrelation coefficient $r_4$:
+    
+        ```{r}
+        r_4 <- acf(process, plot = FALSE)$acf[[4]]
+        r_4
+        ```
+    
+    ii. For a general MA($q$) process, we have
+    $$\var(r_k)
+      \approx \frac{1}{n} \left ( 1 + 2\sum_{j=1}^q \rho_j^2 \right )
+      \quad \text{for any $k > q$}$$
+    for large $n$. Using this expression, the following computes $\var(r_4)$ for
+    the model in question:
+    
+        ```{r}
+        rho_values <- ARMAacf(ma = -c(0.7, 0.5, 0.6))[2:4]
+        var_r_4 <- (1 + 2 * sum(rho_values^2)) / 100
+        var_r_4
+        ```
+    
+    iii. The following R code simulates the process 500 times and plots a
+    histogram of the resulting $r_4$ values:
+    
+        ```{r}
+        r_4_values <- numeric(500)
+        for (i in 1:length(r_4_values)) {
+          p <- arima.sim(n = 100, model = list(ma = -c(0.7, 0.5, 0.6)))
+          r_4_values[[i]] <- acf(p, plot = FALSE)$acf[[4]]
+        }
+        
+        hist(r_4_values, main = "r_4 values", xlab = "r_4")
+        ```
+        
+        The variance of the simulated $r_4$ values is computed as
+        
+        ```{r}
+        var(r_4_values)
+        ```
+        
+        which is very close to the value computed in part (ii).
+    
+    iv. We have the estimator
+    $$\widehat{\var(r_4)}
+      = \frac{1}{n} \left ( 1 + 2\sum_{k=1}^3 r_k^2 \right )$$
+    for $\var(r_4)$. The following computes this estimator on the originally
+    generated data:
+    
+        ```{r}
+        acf_values <- acf(process, plot = FALSE)$acf[1:3]
+        var_r_4_est <- (1 + 2 * sum(acf_values^2)) / 100
+        var_r_4_est
+        ```
+    
+    v. Since $r_4$ is approximately distributed as N($\rho_4, c / n$) for large
+    $n$, where
+    $$c = 1 + 2\sum_{j=1}^3 \rho_j^2 \approx n \var(r_4),$$
+    we can use the estimator from part (iv) to construct an approximate 95\%
+    confidence interval for $\rho_4$ as follows:
+    
+        ```{r}
+        se <- sqrt(var_r_4_est) / 10
+        conf_int <- c(r_4 - 2 * se, r_4 + 2 * se)
+        conf_int
+        ```
+    
+    vi. The value 0 lies outside of the 95\% confidence interval computed in
+    part (v), and so we can reject the null hypothesis $H_0 : \rho_4 = 0$ at
+    level $\alpha = 0.05$.
