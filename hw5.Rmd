@@ -63,8 +63,9 @@ knitr::opts_chunk$set(
         Note that $\{e_t\}$ is a (mean zero) white noise process. Furthermore,
         since $\{\nabla Y_t\}$ is stationary, its mean $\mu$ is constant in $t$.
         Therefore,
-        $$\E(\nabla Y_t) = \E(10 + 0.25 \nabla Y_{t-1} + e_t - 0.1e_{t-1})
-          = \mu = 10 + 0.25\mu,$$
+        $$\mu = \E(\nabla Y_t)
+          = \E(10 + 0.25 \nabla Y_{t-1} + e_t - 0.1e_{t-1})
+          = 10 + 0.25\mu,$$
         so that $\mu = 40/3$. Using the expression for $\gamma_0$ for a
         stationary ARMA(1, 1) process (see page 78), we get
         $$\begin{aligned}
@@ -116,8 +117,7 @@ knitr::opts_chunk$set(
         points(y = diff_log, x = time(diff_log), col = temp_color, pch = 15)
         ```
         
-        Next, we have a time series plot of the (fractional) relative
-        differences:
+        Next, we have a time series plot of the (fractional) relative changes:
         
         ```{r}
         rel_change <- (airpass / zlag(airpass)) - 1
@@ -141,7 +141,7 @@ knitr::opts_chunk$set(
 
 3. (Cryer & Chan, Exercise 5.14)
     a. The following R code generates a plot of log-likelihood against
-    $\lambda$.
+    $\lambda$:
     
         ```{r, fig.asp = 1, out.width = "60%"}
         BoxCox.ar(larain)
@@ -164,7 +164,6 @@ knitr::opts_chunk$set(
         old_par <- par(mfrow = c(1, 2))
         qqnorm(larain, main = "Original data")
         qqline(larain)
-        
         qqnorm(transformed, main = "Transformed data")
         qqline(transformed)
         par(old_par)
@@ -173,7 +172,7 @@ knitr::opts_chunk$set(
         The normal Q-Q plot of the transformed data adheres very closely to the
         theoretical Q-Q plot, indicated by the solid black line. Thus, in
         contrast with the original data, the transformed data appear to be
-        normal.
+        (approximately) normal.
 
     c. The following R code produces time series plots of both the original
     (untransformed) data and the transformed data:
@@ -203,12 +202,11 @@ knitr::opts_chunk$set(
         Both plots seem to indicate a lack of correlation between $Y_t$ and
         $Y_{t-1}$. Moreover, we should not expect the transformation to change
         the dependence between data points in this series. This is a consequence
-        of the following fact: if $Y_1, \ldots, Y_n$ are random variables and
-        $g$ is a (measurable) function, then $g(Y_1), \ldots, g(Y_n)$ are random
-        variables, and they are mutually independent if and only if $Y_1,
-        \ldots, Y_n$ are mutually independent. In this case, $Y_1, \ldots, Y_n$
-        are elements of the time series, and $g(x) = (x^\lambda - 1) / \lambda$,
-        where $\lambda = 0.25$.
+        of the following fact: if $Y_1, \ldots, Y_n$ are mutually independent
+        random variables and $g$ is a (measurable) function, then $g(Y_1),
+        \ldots, g(Y_n)$ are also mutually independent random variables. In this
+        case, $Y_1, \ldots, Y_n$ are elements of the time series, and $g(x) =
+        (x^\lambda - 1) / \lambda$, where $\lambda = 0.25$.
 
 4. Bartlett's Theorem states that, subject to some regularity conditions (which
 are satisified for any stationary ARMA process -- see page 110 of the text), the
@@ -220,10 +218,8 @@ where $C = (c_{ij})$ is an $m \times m$ matrix defined by
 split over multiple lines... -->
 $$c_{ij} = \sum_{k=-\infty}^\infty (\rho_{k+i}\rho_{k+j} + \rho_{k-i}\rho_{k+j} - 2\rho_i\rho_k\rho_{k+j} - 2\rho_j\rho_k\rho_{k+i} + 2\rho_i\rho_j\rho_k^2).$$
     i. In particular, for any $m \geq 1$, we can apply Bartlett's Theorem to get
-    the asymptotic marginal distribution of $r_m$:
-    $$\sqrt{n} (r_m - \rho_m)
-      \overset{\mathcal{D}}\longrightarrow \mathrm{N}(0, c),$$
-    where
+    the asymptotic marginal distribution of $r_m$. We therefore conclude that
+    $r_m$ is approximately distributed as N($\rho_m, c/n$) for large $n$, where
     <!-- TODO: For whatever reason, pandoc doesn't seem to like this equation
     being split over multiple lines... -->
     $$c = \sum_{k=-\infty}^\infty (\rho_{k+1}^2 + \rho_{k-1}\rho_{k+1} - 4\rho_1\rho_k\rho_{k+1} - 2\rho_1^2\rho_k^2).$$
@@ -273,7 +269,7 @@ in question using Gaussian noise:
     
         ```{r}
         rho_values <- ARMAacf(ma = -c(0.7, 0.5, 0.6))[2:4]
-        var_r_4 <- (1 + 2 * sum(rho_values^2)) / 100
+        var_r_4 <- (1 + 2 * sum(rho_values^2)) / length(process)
         var_r_4
         ```
     
@@ -283,7 +279,8 @@ in question using Gaussian noise:
         ```{r}
         r_4_values <- numeric(500)
         for (i in 1:length(r_4_values)) {
-          p <- arima.sim(n = 100, model = list(ma = -c(0.7, 0.5, 0.6)))
+          p <- arima.sim(n = length(process),
+                         model = list(ma = -c(0.7, 0.5, 0.6)))
           r_4_values[[i]] <- acf(p, plot = FALSE)$acf[[4]]
         }
         
@@ -301,12 +298,12 @@ in question using Gaussian noise:
     iv. We have the estimator
     $$\widehat{\var(r_4)}
       = \frac{1}{n} \left ( 1 + 2\sum_{k=1}^3 r_k^2 \right )$$
-    for $\var(r_4)$. The following computes this estimator on the originally
-    generated data:
+    for $\var(r_4)$. The following computes a realization of this estimator on
+    the originally generated data:
     
         ```{r}
         acf_values <- acf(process, plot = FALSE)$acf[1:3]
-        var_r_4_est <- (1 + 2 * sum(acf_values^2)) / 100
+        var_r_4_est <- (1 + 2 * sum(acf_values^2)) / length(process)
         var_r_4_est
         ```
     
@@ -317,7 +314,7 @@ in question using Gaussian noise:
     confidence interval for $\rho_4$ as follows:
     
         ```{r}
-        se <- sqrt(var_r_4_est) / 10
+        se <- sqrt(var_r_4_est / length(process))
         conf_int <- c(r_4 - 2 * se, r_4 + 2 * se)
         conf_int
         ```
