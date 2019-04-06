@@ -1,0 +1,155 @@
+---
+title: "Homework 6"
+author: "Benjamin Noland"
+output: pdf_document
+fontsize: 12pt
+---
+
+```{r setup, include = FALSE}
+library(TSA)
+
+options(digits = 3)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 6,
+  fig.asp = 0.618,
+  out.width = "70%",
+  fig.align = "center",
+  fig.show = "hold",
+  eval = TRUE
+)
+```
+
+\newcommand{\var}{\mathrm{Var}}
+\newcommand{\cov}{\mathrm{Cov}}
+\newcommand{\corr}{\mathrm{Corr}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\pr}{\mathrm{P}}
+
+1. The following code generates 100 observations from the MA(1) model
+$Y_t = e_t + 0.7e_{t-1}$:
+    ```{r}
+    set.seed(1000)
+    y <- arima.sim(model = list(ma = c(0.7)), n = 100)
+    ```
+    Let $Y_1, \ldots, Y_{100}$ denote the observed time series, and let $\Sigma$
+    denote the covariance matrix of $Y = (Y_1, \ldots, Y_{100})$.
+    
+    a. The covariance matrix $\Sigma$ is given by $\Sigma_{ij} =
+    (\gamma_{|i-j|})$. Explicitly,
+    $$\Sigma_{ij} =
+    \begin{cases}
+      (1 + \theta_1^2 + \theta_2^2) \sigma_e^2 & \quad \text{if $i=j$} \\
+      (-\theta_1 + \theta_1 \theta_2) \sigma_e^2 & \quad \text{if $|i-j| = 1$} \\
+      -\theta_2 \sigma_e^2 & \quad \text{if $|i-j| = 2$} \\
+      0 & \quad \text{otherwise}
+    \end{cases}.$$
+    
+    b. Assume the elements of the white noise process $\{e_t\}$ are drawn
+    independently from a N$(0, \sigma_e^2)$ distribution (this is the case for
+    the simulated data generated above). Then the sample $Y = (Y_1, \ldots,
+    Y_{100})$ has a mean zero multivariate normal distribution with covariance
+    matrix $\Sigma$. Let $y = (y_1, \ldots, y_{100})$ a denote realization of
+    the sample $Y$. Then the likelihood function is given by
+    $$L(\theta_1, \theta_2 | y)
+      = \frac{1}{\sqrt{(2\pi)^{100} |\Sigma|}}
+        \exp \left( -\frac{1}{2} y^T \Sigma^{-1} y\right).$$
+    Maximizing $L(\theta_1, \theta_2 | y)$ (or equivalently, the log-likelihood
+    $\log L(\theta_1, \theta_2 | y)$) with respect to $(\theta_1, \theta_2)$
+    yields a maximum likelihood estimate (MLE) $(\hat{\theta}_1,
+    \hat{\theta}_2)$ of $(\theta_1, \theta_2)$.
+    
+    c. The following code fits an MA(2) model to the data using maximum
+    likelihood:
+        ```{r}
+        arima(y, order = c(0, 0, 2), method = "ML")
+        ```
+        From the output, we see that the maximum likelihood estimates for
+        $\theta_1$ and $\theta_2$ are $\hat{\theta}_1 = -0.5246$ and
+        $\hat{\theta}_2 = 0.1835$, respectively (taking into account the
+        differences in convention between R and the book with regard to the
+        signs of the parameters).
+
+    d. From the output in part (c), we see that $\hat{\theta}_1$ and
+    $\hat{\theta}_2$ have approximate standard errors of 0.1072 and 0.1101,
+    respectively.
+
+2. (Cryer & Chan, Exercise 7.1) We can compute method of moments estimates
+$\hat{\phi}_1$ and $\hat{\phi}_2$ of $\phi_1$ and $\phi_2$, respectively, by
+solving for $\hat{\phi}_1$ and $\hat{\phi}_2$ in the sample Yule-Walker
+equations:
+$$\begin{aligned}
+  r_1 &= \hat{\phi}_1 + r_1 \hat{\phi}_2 \\
+  r_2 &= r_1 \hat{\phi}_1 + \hat{\phi}_2
+\end{aligned}.$$
+We get
+$$\begin{aligned}
+  \hat{\phi}_1 &= \frac{r_1 (1 - r_2)}{1 - r_1^2} = \\
+  \hat{\phi}_2 &= \frac{r_2 - r_1^2}{1 - r_1^2} =
+\end{aligned}.$$
+Using these estimates, we can get estimates $\hat{\theta}_0$ and
+$\hat{\sigma}_e^2$ of $\theta_0$ and $\sigma_e^2$, respectively:
+$$\begin{aligned}
+  \hat{\theta}_0 &= \bar{Y} (1 - \hat{\phi}_1 - \hat{\phi}_2) = \\
+  \hat{\sigma}_e^2 &= (1 - \hat{\phi}_1 r_1 - \hat{\phi}_2 r_2) s^2 =
+\end{aligned}.$$
+
+3. (Cryer & Chan, Exercise 7.11) The following code simulates the MA(1) process
+in question:
+    ```{r}
+    set.seed(1000)
+    n <- 48
+    theta <- -0.6
+    y <- arima.sim(model = list(ma = c(-theta)), n = n)
+    ```
+    
+    a. The following code fits an MA(1) model to the data simulated above using
+    maximum likelihood:
+        ```{r}
+        arima(y, order = c(0, 0, 1), method = "ML")
+        ```
+        From the output we see that the maximum likelihood estimate of $\theta$
+        is $\hat{\theta} = -0.5422$.
+
+    b. The following code repeatedly simulates the same series and collects the
+    maximum likelihood estimate of $\theta$ on each trial:
+        ```{r}
+        N <- 100
+        mle <- numeric(N)
+        for (i in 1:N) {
+          y <- arima.sim(model = list(ma = c(-theta)), n = n)
+          fit <- arima(y, order = c(0, 0, 1), method = "ML")
+          mle[[i]] <- -fit$coef[["ma1"]]
+        }
+        ```
+    
+    c. The following displays the approximate sampling distribution of the MLE
+    $\hat{\theta}$ based on the simulation in part (b):
+        ```{r}
+        hist(mle, freq = FALSE, breaks = 20,
+             main = "Sampling distribution of MLE", xlab = "MLE")
+        ```
+    
+    d. The true parameter value is $\theta = -0.6$. The approximate mean of the
+    MLE sampling distribution based on the simulation in part (b) is
+    $\bar{\hat{\theta}} = `r mean(mle)`$, with approximate variance
+    $\widehat{\var(\hat{\theta})} = `r var(mle)`$. Since the mean is close to
+    the true value, and the variance is small, the estimates appear to be
+    approximately unbiased (i.e., approximately centered around the true value
+    $\theta$).
+    
+    e. The approximate variance of the sampling distribution is
+    $\widehat{\var(\hat{\theta})} = `r var(mle)`$. Large sample theory predicts
+    that for large $n$, $\var(\hat{\theta}) = (1 - \theta^2) / n = 0.013$. These
+    two values are relatively close.
+
+4. (Cryer & Chan, Exercise 7.31) The following code simulates the time series in
+question:
+    ```{r}
+    n <- 48
+    phi <- 0.7
+    y <- arima.sim(model = list(ar = c(phi)), n = n)
+    ```
+
+5. (Cryer & Chan, Exercise 8.9)
