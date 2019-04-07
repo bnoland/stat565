@@ -58,7 +58,8 @@ $Y_t = e_t + 0.7e_{t-1}$:
     Maximizing $L(\theta_1, \theta_2 | y)$ (or equivalently, the log-likelihood
     $\log L(\theta_1, \theta_2 | y)$) with respect to $(\theta_1, \theta_2)$
     yields a maximum likelihood estimate (MLE) $(\hat{\theta}_1,
-    \hat{\theta}_2)$ of $(\theta_1, \theta_2)$.
+    \hat{\theta}_2)$ of $(\theta_1, \theta_2)$. Note that, as computed in part
+    (a), the covariance matrix $\Sigma$ depends on $\theta_1$ and $\theta_2$.
     
     c. The following code fits an MA(2) model to the data using maximum
     likelihood:
@@ -75,6 +76,7 @@ $Y_t = e_t + 0.7e_{t-1}$:
     $\hat{\theta}_2$ have approximate standard errors of 0.1072 and 0.1101,
     respectively.
 
+<!-- TODO: Write in numerical values. -->
 2. (Cryer & Chan, Exercise 7.1) We can compute method of moments estimates
 $\hat{\phi}_1$ and $\hat{\phi}_2$ of $\phi_1$ and $\phi_2$, respectively, by
 solving for $\hat{\phi}_1$ and $\hat{\phi}_2$ in the sample Yule-Walker
@@ -144,12 +146,79 @@ in question:
     that for large $n$, $\var(\hat{\theta}) = (1 - \theta^2) / n = 0.013$. These
     two values are relatively close.
 
+<!-- TODO: Write comparisons with theoretical large sample distribution + write
+in value for theoretical large sample variance. -->
 4. (Cryer & Chan, Exercise 7.31) The following code simulates the time series in
 question:
     ```{r}
+    set.seed(100)
     n <- 48
     phi <- 0.7
     y <- arima.sim(model = list(ar = c(phi)), n = n)
     ```
+    Next we fit an AR(1) model to this simulated data using maximum likelihood:
+    ```{r}
+    fit <- arima(y, order = c(1, 0, 0), include.mean = TRUE, method = "ML")
+    fit
+    ```
+    Large sample theory predicts that for large $n$, the MLE $\theta{\phi}$ of
+    $\phi$ is approximately unbiased and normally distributed with variance
+    $\var(\hat{\theta}) \approx (1 - \phi^2) / n = blah$.
+    
+    The following function produces a histogram showing the estimated
+    distribution of $\phi$ based on given bootstrap estimates, as well as a
+    normal Q-Q plot showing adherence to normality (of lack thereof):
+    ```{r}
+    phi_dist_plots <- function(boot) {
+      phi <- boot[,1]
+      old_par <- par(mfrow = c(1, 2))
+      hist(phi, prob = TRUE, breaks = 20,
+         main = "Bootstrap distribution", xlab = "phi")
+      qqnorm(phi)
+      qqline(phi)
+      par(old_par)
+    }
+    ```
+    We now compute the estimated distribution of $\phi$ using four different
+    bootstrapping techniques.
+    + **Method I:**
+        ```{r}
+        boot <- arima.boot(fit, cond.boot = TRUE, is.normal = TRUE,
+                           B = 1000, init = y)
+        phi_dist_plots(boot)
+        ```
+        This distribution has approximate mean
+        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
+        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
+
+    + **Method II:**
+        ```{r}
+        boot <- arima.boot(fit, cond.boot = TRUE, is.normal = FALSE,
+                           B = 1000, init = y)
+        phi_dist_plots(boot)
+        ```
+        This distribution has approximate mean
+        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
+        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
+
+    + **Method III:**
+        ```{r}
+        boot <- arima.boot(fit, cond.boot = FALSE, is.normal = TRUE,
+                           B = 1000, ntrans = 100, init = y)
+        phi_dist_plots(boot)
+        ```
+        This distribution has approximate mean
+        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
+        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
+
+    + **Method IV:**
+        ```{r}
+        boot <- arima.boot(fit, cond.boot = FALSE, is.normal = FALSE,
+                           B = 1000, ntrans = 100, init = y)
+        phi_dist_plots(boot)
+        ```
+        This distribution has approximate mean
+        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
+        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
 
 5. (Cryer & Chan, Exercise 8.9)
