@@ -50,7 +50,7 @@ $Y_t = e_t + 0.7e_{t-1}$:
     independently from a N$(0, \sigma_e^2)$ distribution (this is the case for
     the simulated data generated above). Then the sample $Y = (Y_1, \ldots,
     Y_{100})$ has a mean zero multivariate normal distribution with covariance
-    matrix $\Sigma$. Let $y = (y_1, \ldots, y_{100})$ a denote realization of
+    matrix $\Sigma$. Let $y = (y_1, \ldots, y_{100})$ denote a realization of
     the sample $Y$. Then the likelihood function is given by
     $$L(\theta_1, \theta_2 | y)
       = \frac{1}{\sqrt{(2\pi)^{100} |\Sigma|}}
@@ -73,7 +73,7 @@ $Y_t = e_t + 0.7e_{t-1}$:
         signs of the parameters).
 
     d. From the output in part (c), we see that $\hat{\theta}_1$ and
-    $\hat{\theta}_2$ have approximate standard errors of 0.1072 and 0.1101,
+    $\hat{\theta}_2$ have approximate standard errors of 0.107 and 0.110,
     respectively.
 
 2. (Cryer & Chan, Exercise 7.1) We can compute method of moments estimates
@@ -279,8 +279,8 @@ IMA(1, 1) model to the data:
     ```{r}
     shapiro.test(residuals(ima11_fit))
     ```
-    We therefore fail to reject the null hypothesis of normality of the
-    residuals on the basis of the Shapiro-Wilk test for either model.
+    Therefore, for both models, we fail to reject the null hypothesis of
+    normality of the residuals on the basis of the Shapiro-Wilk test.
 
     Now for the autocorrelation plots:
     ```{r}
@@ -317,3 +317,6 @@ IMA(1, 1) model to the data:
     ```
     Thus we reject the null for AR(1) model, and fail to reject it for the
     IMA(1, 1) model (as the plots above suggested).
+
+    On the basis of the above diagnostics, it appears as though the IMA(1, 1)
+    model is a better fit to the data.
