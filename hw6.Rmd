@@ -57,9 +57,9 @@ $Y_t = e_t + 0.7e_{t-1}$:
         \exp \left( -\frac{1}{2} y^T \Sigma^{-1} y\right).$$
     Maximizing $L(\theta_1, \theta_2 | y)$ (or equivalently, the log-likelihood
     $\log L(\theta_1, \theta_2 | y)$) with respect to $(\theta_1, \theta_2)$
-    yields a maximum likelihood estimate (MLE) $(\hat{\theta}_1,
-    \hat{\theta}_2)$ of $(\theta_1, \theta_2)$. Note that, as computed in part
-    (a), the covariance matrix $\Sigma$ depends on $\theta_1$ and $\theta_2$.
+    yields a maximum likelihood estimate $(\hat{\theta}_1, \hat{\theta}_2)$ of
+    $(\theta_1, \theta_2)$. Note that, as computed in part (a), the covariance
+    matrix $\Sigma$ depends on $\theta_1$ and $\theta_2$.
     
     c. The following code fits an MA(2) model to the data using maximum
     likelihood:
@@ -67,8 +67,8 @@ $Y_t = e_t + 0.7e_{t-1}$:
         arima(y, order = c(0, 0, 2), method = "ML")
         ```
         From the output, we see that the maximum likelihood estimates for
-        $\theta_1$ and $\theta_2$ are $\hat{\theta}_1 = -0.5246$ and
-        $\hat{\theta}_2 = 0.1835$, respectively (taking into account the
+        $\theta_1$ and $\theta_2$ are $\hat{\theta}_1 \approx -0.525$ and
+        $\hat{\theta}_2 \approx 0.184$, respectively (taking into account the
         differences in convention between R and the book with regard to the
         signs of the parameters).
 
@@ -76,7 +76,6 @@ $Y_t = e_t + 0.7e_{t-1}$:
     $\hat{\theta}_2$ have approximate standard errors of 0.1072 and 0.1101,
     respectively.
 
-<!-- TODO: Write in numerical values. -->
 2. (Cryer & Chan, Exercise 7.1) We can compute method of moments estimates
 $\hat{\phi}_1$ and $\hat{\phi}_2$ of $\phi_1$ and $\phi_2$, respectively, by
 solving for $\hat{\phi}_1$ and $\hat{\phi}_2$ in the sample Yule-Walker
@@ -87,14 +86,14 @@ $$\begin{aligned}
 \end{aligned}.$$
 We get
 $$\begin{aligned}
-  \hat{\phi}_1 &= \frac{r_1 (1 - r_2)}{1 - r_1^2} = \\
-  \hat{\phi}_2 &= \frac{r_2 - r_1^2}{1 - r_1^2} =
+  \hat{\phi}_1 &= \frac{r_1 (1 - r_2)}{1 - r_1^2} \approx 1.11 \\
+  \hat{\phi}_2 &= \frac{r_2 - r_1^2}{1 - r_1^2} \approx -0.39
 \end{aligned}.$$
 Using these estimates, we can get estimates $\hat{\theta}_0$ and
 $\hat{\sigma}_e^2$ of $\theta_0$ and $\sigma_e^2$, respectively:
 $$\begin{aligned}
-  \hat{\theta}_0 &= \bar{Y} (1 - \hat{\phi}_1 - \hat{\phi}_2) = \\
-  \hat{\sigma}_e^2 &= (1 - \hat{\phi}_1 r_1 - \hat{\phi}_2 r_2) s^2 =
+  \hat{\theta}_0 &= \bar{Y} (1 - \hat{\phi}_1 - \hat{\phi}_2) \approx 0.56\\
+  \hat{\sigma}_e^2 &= (1 - \hat{\phi}_1 r_1 - \hat{\phi}_2 r_2) s^2 \approx 1.54
 \end{aligned}.$$
 
 3. (Cryer & Chan, Exercise 7.11) The following code simulates the MA(1) process
@@ -112,7 +111,7 @@ in question:
         arima(y, order = c(0, 0, 1), method = "ML")
         ```
         From the output we see that the maximum likelihood estimate of $\theta$
-        is $\hat{\theta} = -0.5422$.
+        is $\hat{\theta} \approx -0.542$.
 
     b. The following code repeatedly simulates the same series and collects the
     maximum likelihood estimate of $\theta$ on each trial:
@@ -135,19 +134,17 @@ in question:
     
     d. The true parameter value is $\theta = -0.6$. The approximate mean of the
     MLE sampling distribution based on the simulation in part (b) is
-    $\bar{\hat{\theta}} = `r mean(mle)`$, with approximate variance
-    $\widehat{\var(\hat{\theta})} = `r var(mle)`$. Since the mean is close to
-    the true value, and the variance is small, the estimates appear to be
+    $\bar{\hat{\theta}} \approx `r mean(mle)`$, with approximate variance
+    $\widehat{\var(\hat{\theta})} \approx `r var(mle)`$. Since the mean is close
+    to the true value, and the variance is small, the estimates appear to be
     approximately unbiased (i.e., approximately centered around the true value
     $\theta$).
     
     e. The approximate variance of the sampling distribution is
-    $\widehat{\var(\hat{\theta})} = `r var(mle)`$. Large sample theory predicts
-    that for large $n$, $\var(\hat{\theta}) = (1 - \theta^2) / n = 0.013$. These
-    two values are relatively close.
+    $\widehat{\var(\hat{\theta})} \approx `r var(mle)`$. Large sample theory
+    predicts that for large $n$, $\var(\hat{\theta}) = (1 - \theta^2) / n
+    \approx 0.013$. These two values are relatively close.
 
-<!-- TODO: Write comparisons with theoretical large sample distribution + write
-in value for theoretical large sample variance. -->
 4. (Cryer & Chan, Exercise 7.31) The following code simulates the time series in
 question:
     ```{r}
@@ -158,12 +155,12 @@ question:
     ```
     Next we fit an AR(1) model to this simulated data using maximum likelihood:
     ```{r}
-    fit <- arima(y, order = c(1, 0, 0), include.mean = TRUE, method = "ML")
+    fit <- arima(y, order = c(1, 0, 0), include.mean = FALSE, method = "ML")
     fit
     ```
-    Large sample theory predicts that for large $n$, the MLE $\theta{\phi}$ of
+    Large sample theory predicts that for large $n$, the MLE $\hat{\phi}$ of
     $\phi$ is approximately unbiased and normally distributed with variance
-    $\var(\hat{\theta}) \approx (1 - \phi^2) / n = blah$.
+    $\var(\hat{\theta}) \approx (1 - \phi^2) / n \approx 0.011$.
     
     The following function produces a histogram showing the estimated
     distribution of $\phi$ based on given bootstrap estimates, as well as a
@@ -181,44 +178,142 @@ question:
     ```
     We now compute the estimated distribution of $\phi$ using four different
     bootstrapping techniques.
-    + **Method I:**
+    + **Method I:** Bootstrap conditional on first $p + d$ initial values, and
+    errors are assumed normally distributed.
         ```{r}
         boot <- arima.boot(fit, cond.boot = TRUE, is.normal = TRUE,
                            B = 1000, init = y)
         phi_dist_plots(boot)
         ```
         This distribution has approximate mean
-        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
-        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
+        $\bar{\hat{\theta}} \approx `r mean(boot[,1])`$, and approximate
+        variance $\widehat{\var(\hat{\theta})} \approx `r var(boot[,1])`$.
 
-    + **Method II:**
+    + **Method II:** Bootstrap conditional on first $p + d$ initial values, and
+    errors are sampled with replacement from the residuals of the fitted model.
         ```{r}
         boot <- arima.boot(fit, cond.boot = TRUE, is.normal = FALSE,
                            B = 1000, init = y)
         phi_dist_plots(boot)
         ```
         This distribution has approximate mean
-        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
-        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
+        $\bar{\hat{\theta}} \approx `r mean(boot[,1])`$, and approximate
+        variance $\widehat{\var(\hat{\theta})} \approx `r var(boot[,1])`$.
 
-    + **Method III:**
+    + **Method III:** Bootstrap simulates stationary realizations from the
+    fitted model, and errors are assumed normally distributed.
         ```{r}
         boot <- arima.boot(fit, cond.boot = FALSE, is.normal = TRUE,
                            B = 1000, ntrans = 100, init = y)
         phi_dist_plots(boot)
         ```
         This distribution has approximate mean
-        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
-        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
+        $\bar{\hat{\theta}} \approx `r mean(boot[,1])`$, and approximate
+        variance $\widehat{\var(\hat{\theta})} \approx `r var(boot[,1])`$.
 
-    + **Method IV:**
+    + **Method IV:** Bootstrap simulates stationary realizations from the fitted
+    model, and errors are sampled with replacement from the residuals of the
+    fitted model.
         ```{r}
         boot <- arima.boot(fit, cond.boot = FALSE, is.normal = FALSE,
                            B = 1000, ntrans = 100, init = y)
         phi_dist_plots(boot)
         ```
         This distribution has approximate mean
-        $\bar{\hat{\theta}} = `r mean(boot[,1])`$, and approximate variance
-        $\widehat{\var(\hat{\theta})} = `r var(boot[,1])`$.
+        $\bar{\hat{\theta}} \approx `r mean(boot[,1])`$, and approximate
+        variance $\widehat{\var(\hat{\theta})} \approx `r var(boot[,1])`$.
 
-5. (Cryer & Chan, Exercise 8.9)
+    Each of the four bootstrap methods yield similar results. In each case, the
+    mean bootstrap estimate of $\phi$ is very close to the maximum likelihood
+    estimate, and the bootstrap estimate of the variance is very close to the
+    asymptotic variance of the MLE. However, each of the bootstrap distributions
+    deviates somewhat from normality in the tails. Moreover, none of the
+    estimates -- including the MLE -- are close to the true value of $\phi =
+    0.7$. This is likely due to the small number of observations ($n = 48$).
+
+5. (Cryer & Chan, Exercise 8.9) The following fits both an AR(1) model and an
+IMA(1, 1) model to the data:
+    ```{r}
+    data(robot)
+    ar1_fit <- arima(robot, c(1, 0, 0))
+    ima11_fit <- arima(robot, c(0, 1, 1))
+    ```
+    The results of the AR(1) fit are as follows:
+    ```{r}
+    ar1_fit
+    ```
+    And for the IMA(1, 1) fit:
+    ```{r}
+    ima11_fit
+    ```
+    The two models have comparable AICs. Residual plots for the two models are
+    as follows:
+    ```{r}
+    plot(rstandard(ar1_fit), main = "AR(1) model",
+         ylab = "Standardized residual", type = "l")
+    plot(rstandard(ima11_fit), main = "IMA(1, 1) model",
+         ylab = "Standardized residual", type = "l")
+    ```
+    The plot for the AR(1) model displays a subtle dip in the value of the
+    residuals later in time, while the plot for the IMA(1, 1) model remains
+    relatively level throughout. Both plots could reasonably be displaying white
+    noise.
+
+    Normal Q-Q plots of the residuals for both models are as follows:
+    ```{r}
+    old_par <- par(mfrow = c(1, 2))
+    qqnorm(residuals(ar1_fit), main = "AR(1) model")
+    qqline(residuals(ar1_fit))
+    qqnorm(residuals(ima11_fit), main = "IMA(1, 1) model")
+    qqline(residuals(ima11_fit))
+    par(old_par)
+    ```
+    The residuals for both models appear to be approximately normal, although
+    the residuals for the IMA(1, 1) model display a bit more deviation from
+    normality in the tails. In addition, the Shapiro-Wilk test yields the
+    following for the AR(1) model:
+    ```{r}
+    shapiro.test(residuals(ar1_fit))
+    ```
+    and the following for the IMA(1, 1) model:
+    ```{r}
+    shapiro.test(residuals(ima11_fit))
+    ```
+    We therefore fail to reject the null hypothesis of normality of the
+    residuals on the basis of the Shapiro-Wilk test for either model.
+
+    Now for the autocorrelation plots:
+    ```{r}
+    acf(residuals(ar1_fit), main = "AR(1) model")
+    acf(residuals(ima11_fit), main = "IMA(1, 1) model")
+    ```
+    The sample ACF for the AR(1) model is consistently significantly different
+    from zero for a great deal of the lags shown in the plot. This suggests that
+    the residuals from this model are _not_ white noise. On the other hand, the
+    sample ACF of the residuals for the IMA(1, 1) is characteristic of white
+    noise (with the exception of the unusually negative value for lag 10).
+
+    The following produces various diagnostic plots for the AR(1) model,
+    including a plot of $p$-values from the Ljung-Box test against the number of
+    lags $K$ to consider when computing the associated test statistic:
+    ```{r, fig.asp = 1}
+    tsdiag(ar1_fit, gof.lag = 15, omit.initial = FALSE)
+    ```
+    The following produces the same plots for the IMA(1, 1) model:
+    ```{r, fig.asp = 1}
+    tsdiag(ima11_fit, gof.lag = 15, omit.initial = FALSE)
+    ```
+    The plot of Ljung-Box test $p$-values for the AR(1) model indicates that the
+    null hypothesis that the residuals are uncorrelated should likely be
+    rejected, and thus we conclude that the residuals are correlated. On the
+    other hand, the $p$-values for the IMA(1, 1) model indicate that we should
+    likely _not_ reject the null, and thus we conclude that the residuals are
+    uncorrelated.
+    
+    We also conduct the Ljung-Box test for the specific value of $K = 15$:
+    ```{r}
+    Box.test(residuals(ar1_fit), lag = 15, type = "Ljung-Box", fitdf = 1)
+    Box.test(residuals(ima11_fit), lag = 15, type = "Ljung-Box", fitdf = 1)
+    ```
+    Thus we reject the null for AR(1) model, and fail to reject it for the
+    IMA(1, 1) model (as the plots above suggested).
