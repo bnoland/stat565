@@ -28,7 +28,92 @@ knitr::opts_chunk$set(
 \newcommand{\pr}{\mathrm{P}}
 
 1. (Cryer & Chan, Exercise 9.1)
+    a. We have
+    $$\begin{aligned}
+      \hat{Y}_t(1) - \mu &= \E(Y_{t+1} - \mu | Y_1, \ldots, Y_t) \\
+        &= \E[\phi(Y_t - \mu) + e_{t+1} | Y_1, \ldots, Y_t] \\
+        &= \phi[\E(Y_t | Y_1, \ldots, Y_t) - \mu]
+          + \E(e_{t+1} | Y_1, \ldots, Y_t) \\
+        &= \phi(Y_t - \mu) + \E(e_{t+1}) \\
+        &= \phi(Y_t - \mu),
+    \end{aligned}$$
+    so that
+    $$\hat{Y}_t(1) = \phi(Y_t - \mu) + \mu.$$
+    Plugging in the given estimates for $Y_t, \phi$, and $\mu$, we get
+    $\hat{Y}_t(1) = 10.1$.
+    
+    b. (**In only one way**) Let $l > 1$. Then we have
+    $$\begin{aligned}
+      \hat{Y}_t(l) - \mu &= \E(Y_{t+l} - \mu | Y_1, \ldots, Y_t) \\
+        &= \E[\phi(Y_{t+l-1} - \mu) + e_{t+l} | Y_1, \ldots, Y_t] \\
+        &= \phi[\E(Y_{t+l-1} | Y_1, \ldots, Y_t) - \mu]
+          + \E(e_{t+l} | Y_1, \ldots, Y_t) \\
+        &= \phi(\hat{Y}_t(l) - \mu) + \E(e_{t+l}) \\
+        &= \phi(\hat{Y}_t(l) - \mu) \\
+        &= \phi^l (Y_t - \mu),
+    \end{aligned}$$
+    where in the last step the recursion in $l$ was evaluated using the result
+    from part (a). Therefore,
+    $$\hat{Y}_t(l) = \phi^l (Y_t - \mu) + \mu.$$
+    In particular,
+    $$\hat{Y}_t(2) = \phi^2 (Y_t - \mu) + \mu.$$
+    Plugging in the given estimates for $Y_t, \phi$, and $\mu$, we get
+    $\hat{Y}_t(2) = 11.15$.
+    
+    c. Using the result from part (b), we get
+    $$\hat{Y}_t(10) = \phi^{10} (Y_t - \mu) + \mu.$$
+    Plugging in the given estimates for $Y_t, \phi$, and $\mu$, we get
+    $\hat{Y}_t(10) \approx 10.8$.
+    
 2. (Cryer & Chan, Exercise 9.2)
+    a. The model is of the form
+    $$Y_t = \theta_0 + \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + e_t.$$
+    The forecast at lead $l$ is given by
+    $$\begin{aligned}
+      \hat{Y}_t(l) &= \E(Y_{t+l} | Y_1, \ldots, Y_t) \\
+        &= \E(\theta_0 + \phi_1 Y_{t+l-1} + \phi_2 Y_{t+l-2}
+          + e_{t+l} | Y_1, \ldots, Y_t) \\
+        &= \theta_0 + \phi_1 \hat{Y}_t(l-1) + \phi_2 \hat{Y}_t(l-2)
+          + \E(e_{t+l}) \\
+        &= \theta_0 + \phi_1 \hat{Y}_t(l-1) + \phi_2 \hat{Y}_t(l-2).
+    \end{aligned}$$
+    Thus, in particular,
+    $$\begin{aligned}
+      \hat{Y}_t(1) &= \theta_0 + \phi_1 \hat{Y}_t(0) + \phi_2 \hat{Y}_t(-1) \\
+        &= \theta_0 + \phi_1 Y_t + \phi_2 Y_{t-1}
+    \end{aligned}$$
+    and
+    $$\begin{aligned}
+      \hat{Y}_t(2) &= \theta_0 + \phi_1 \hat{Y}_t(1) + \phi_2 \hat{Y}_t(0) \\
+        &= \theta_0 + \phi_1 \hat{Y}_t(1) + \phi_2 Y_t.
+    \end{aligned}$$
+    We are given that $Y_1 = 9, Y_2 = 11$, and $Y_3 = 10$ (in millions of
+    dollars). Plugging these values into the above expressions, with $t = 3$, we
+    find $\hat{Y}_3(1) = 10.5$ and $\hat{Y}_3(2) = 11.55$ for the forecasted
+    sales for 2008 and 2009, respectively.
+    
+    b. Using the result on page 75, we find that $\Psi_1 = \phi_1 = 1.1$.
+    
+    c. Assume the white noise process $\{e_t\}$ is Gaussian. The forecast error
+    at lead 1 is given by (see the result on page 202)
+    $$\begin{aligned}
+      e_t(1) &= e_{t+1} + \Psi_1 e_t + \Psi_0 e_{t+1} \\
+        &= e_{t+1} + \phi_1 e_t + e_{t+1} \\
+        &= \phi_1 e_t + 2e_{t+1}
+    \end{aligned}$$
+    since $\Psi_1 = \psi_1$ and $\Psi_0 = 1$ (see the result on page 75). Thus,
+    $$e_t(1) = \phi_1 e_t + 2e_{t+1}
+      \sim \mathrm{N}(0, (\phi_1^2 + 4)\sigma_e^2).$$
+    Since $e_t(1) = Y_{t+1} - Y_t(1)$ by definition, we therefore get
+    $$\pr\left\{ -z_{1-\alpha/2}
+      \leq \frac{Y_{t+1} - \hat{Y}_t(1)}{\sqrt{(\phi_1^2 + 4)\sigma_e^2}}
+      \leq z_{1-\alpha/2} \right\} = 1 - \alpha$$
+    for a given confidence level $\alpha$. Rearrangement yields the following
+    $(1 - \alpha) \times 100\%$ prediction interval for $Y_{t+1}$:
+    $$\hat{Y}_t(1) \pm z_{1-\alpha/2} \sqrt{(\phi_1^2 + 4)\sigma_e^2}.$$
+    Letting $\alpha = 0.05$ and plugging in the pertinent quantities, we get
+    $(4.14, 16.8)$ as a 95\% prediction interval for $Y_4$.
+
 3. The following simulates an MA(2) process with $\theta_1 = 1, \theta_2 =
 -0.6$, and $\mu = 100$:
     ```{r}
@@ -140,8 +225,9 @@ knitr::opts_chunk$set(
         ```{r}
         as.numeric(res$lpi)
         ```
-        respectively. Notice that each of the forecasts are the same, as should be
-        the case for an IMA(1, 1) model with no constant term (as is the case here).
+        respectively. Notice that each of the forecasts are the same, as should
+        be the case for an IMA(1, 1) model with no constant term (as is the case
+        here).
     
     b. The following is a plot of the time series, along with the forecasts
     (solid black points) and their associated 95\% prediction limits, as well as
@@ -152,8 +238,71 @@ knitr::opts_chunk$set(
         truth <- window(robot, start = length(robot) - 5 + 1)
         points(y = truth, x = time(truth), col = 2)
         ```
-    From this plot we see that each of the true values lies within the
-    prediction limits for the corresponding forecast. As mentioned in part (a),
-    all of the forecasted values are the same, and this is shown on the plot.
+        From this plot we see that each of the true values lies within the
+        prediction limits for the corresponding forecast. As mentioned in part
+        (a), all of the forecasted values are the same, and this is shown on the
+        plot.
     
-    c.
+    c. The following code fits an ARMA(1, 1) model to all but the last five
+    values of the time series:
+        ```{r}
+        training <- window(robot, end = length(robot) - 5)
+        model <- arima(training, order = c(1, 0, 1))
+        model
+        ```
+        Next, we use this model to forecast the final five observations in the
+        time series, which were left out when fitting the model:
+        ```{r}
+        res <- plot(model, n.ahead = 5, Plot = FALSE)
+        ```
+        The forecasts are
+        ```{r}
+        as.numeric(res$pred)
+        ```
+        and the upper and lower prediction limits are
+        ```{r}
+        as.numeric(res$upi)
+        ```
+        and
+        ```{r}
+        as.numeric(res$lpi)
+        ```
+        respectively. Note that unlike with the IMA(1, 1) model fit in part (a),
+        the forecasts are not all the same value.
+        
+        The following is a plot of the time series, along with the forecasts
+        (solid black points) and their associated 95\% prediction limits, as
+        well as the associated true values (red circles). The constant term in
+        the model is indicated by the solid horizontal line. The plot is
+        restricted to the end of the time series for easy visualization.
+        ```{r}
+        plot(model, n.ahead = 5, n1 = 300, pch = 19)
+        abline(h = coef(model)[["intercept"]])
+        truth <- window(robot, start = length(robot) - 5 + 1)
+        points(y = truth, x = time(truth), col = 2)
+        ```
+        As mentioned above, unlike with the IMA(1, 1), the forecasts are not all
+        the same value, and this can be seen in the plot. However, as with the
+        IMA(1, 1) model, each of the true values lies within the prediction
+        limits for the corresponding forecast.
+
+5. Let $\tilde{\phi}(x) = (1 - 1.6x + 0.7x^2)(1 - 0.8x^{12})$ denote the AR
+characteristic polynomial in question.
+    a. The AR characteristic polynomial $\tilde{\phi}$ has roots
+    $$\begin{aligned}
+      x_1 &\approx 1.14 - 0.350 i \\
+      x_2 &\approx 1.13 + 0.350 i \\
+      x_3 &\approx -1.02 \\
+      x_4 &\approx 1.02,
+    \end{aligned}$$
+    each of which has modulus $> 1$, so that the process is stationary.
+    
+    b. The AR characteristic polynomial $\tilde{\phi}$ can be written as
+    $\tilde{\phi}(x) = \phi(x) \Phi(x)$, where
+    $$\begin{aligned}
+      \phi(x) &= 1 - 1.6x + 0.7x^2 \\
+      \Phi(x) &= 1 - 0.8x^{12}.
+    \end{aligned}$$
+    Since the model is AR, the MA characteristic polynomial of the model is
+    simply $\tilde{\theta}(x) = 1$. Therefore $q = Q = 0$, $p = 2$, $P = 1$, and
+    $s = 12$, so that the model is ARMA$(2, 0) \times (1, 0)_{12}$.
