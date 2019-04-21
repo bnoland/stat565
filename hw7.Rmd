@@ -1,0 +1,159 @@
+---
+title: "Homework 7"
+author: "Benjamin Noland"
+output: pdf_document
+fontsize: 12pt
+---
+
+```{r setup, include = FALSE}
+library(TSA)
+
+options(digits = 3)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 6,
+  fig.asp = 0.618,
+  out.width = "70%",
+  fig.align = "center",
+  fig.show = "hold",
+  eval = TRUE
+)
+```
+
+\newcommand{\var}{\mathrm{Var}}
+\newcommand{\cov}{\mathrm{Cov}}
+\newcommand{\corr}{\mathrm{Corr}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\pr}{\mathrm{P}}
+
+1. (Cryer & Chan, Exercise 9.1)
+2. (Cryer & Chan, Exercise 9.2)
+3. The following simulates an MA(2) process with $\theta_1 = 1, \theta_2 =
+-0.6$, and $\mu = 100$:
+    ```{r}
+    set.seed(1432756)
+    series <- arima.sim(model = list(ma = c(-1, 0.6)), n = 36) + 100
+    ```
+    
+    a. The following uses the first 32 observations of the process to compute
+    maximum likelihood estimates of $\theta_1, \theta_2$, and $\mu$:
+        ```{r}
+        # Set aside the first 32 values for computing forecasts.
+        training <- window(series, end = 32)
+        model <- arima(training, order = c(0, 0, 2), method = "ML")
+        model
+        ```
+    
+    b. The following plots the time series along with the 4 forecasted values
+    (the solid black points), pointwise 95\% prediction limits, and a solid
+    horizontal line indicating the estimated value of $\mu$:
+        ```{r}
+        res <- plot(model, n.ahead = 4, pch = 19)
+        abline(h = coef(model)[["intercept"]])
+        ```
+    The following are the four predicted values:
+        ```{r}
+        preds <- res$pred
+        preds
+        ```
+    
+    c. The forecasts at lead times 3 and 4 are *very* close to the estimated
+    value of $\mu$, and therefore lie almost along the horizontal line in the
+    plot in part (b).
+    
+    d. The true values are as follows:
+        ```{r}
+        truth <- window(series, start = 33)
+        truth
+        ```
+    We therefore have the following pointwise deviations:
+        ```{r}
+        as.numeric(preds) - as.numeric(truth)
+        ```
+    Thus the model overestimates the true values at lead times 1 and 3, and
+    underestimates the true values at lead times 2 and 4.
+    
+    e. The following is the same plot as in part (b), but with the true values
+    plotted as red circles. Each of the actual values appears to lie within its
+    corresponding 95\% prediction interval.
+        ```{r}
+        plot(model, n.ahead = 4, pch = 19)
+        points(y = truth, x = time(truth), col = 2)
+        abline(h = coef(model)[["intercept"]])
+        ```
+    
+    f. The following code simulates the same process as above 500 times and
+    computes the fraction of times the forecast limits cover each of the true
+    values.
+        ```{r}
+        set.seed(1432756)
+        
+        N <- 500
+        count <- 0
+        for (i in 1:N) {
+          # Simulate the process and fit a model on the training subset.
+          series <- arima.sim(model = list(ma = c(-1, 0.6)), n = 36) + 100
+          training <- window(series, end = 32)
+          model <- arima(training, order = c(0, 0, 2), method = "ML")
+          
+          # Compute the forecasts and get the upper/lower prediction limits.
+          res <- plot(model, n.ahead = 4, Plot = FALSE)
+          upper <- res$upi
+          lower <- res$lpi
+          
+          # Do all the forecasts lie within their respective prediction intervals?
+          truth <- window(series, start = 33)
+          success <- all(truth >= lower & truth <= upper)
+          count <- count + success
+        }
+        
+        count / N
+        ```
+    Thus the forecast limits cover each of the true values approximately 78.4\%
+    of the time.
+
+4. (Cryer & Chan, Exercise 9.23)
+    a. The following code fits an IMA(1, 1) model to all but the last five
+    values of the time series:
+        ```{r}
+        data(robot)
+        
+        training <- window(robot, end = length(robot) - 5)
+        model <- arima(training, order = c(0, 1, 1))
+        model
+        ```
+        Next, we use this model to forecast the final five observations in the
+        time series, which were left out when fitting the model:
+        ```{r}
+        res <- plot(model, n.ahead = 5, Plot = FALSE)
+        ```
+        The forecasts are
+        ```{r}
+        as.numeric(res$pred)
+        ```
+        and the upper and lower prediction limits are
+        ```{r}
+        as.numeric(res$upi)
+        ```
+        and
+        ```{r}
+        as.numeric(res$lpi)
+        ```
+        respectively. Notice that each of the forecasts are the same, as should be
+        the case for an IMA(1, 1) model with no constant term (as is the case here).
+    
+    b. The following is a plot of the time series, along with the forecasts
+    (solid black points) and their associated 95\% prediction limits, as well as
+    the associated true values (red circles). The plot is restricted to the end
+    of the time series for easy visualization.
+        ```{r}
+        plot(model, n.ahead = 5, n1 = 300, pch = 19)
+        truth <- window(robot, start = length(robot) - 5 + 1)
+        points(y = truth, x = time(truth), col = 2)
+        ```
+    From this plot we see that each of the true values lies within the
+    prediction limits for the corresponding forecast. As mentioned in part (a),
+    all of the forecasted values are the same, and this is shown on the plot.
+    
+    c.
