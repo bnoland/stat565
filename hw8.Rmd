@@ -1,0 +1,89 @@
+---
+title: "Homework 8"
+author: "Benjamin Noland"
+output: pdf_document
+fontsize: 12pt
+---
+
+```{r setup, include = FALSE}
+library(TSA)
+
+#options(digits = 3)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 6,
+  fig.asp = 0.618,
+  out.width = "70%",
+  fig.align = "center",
+  fig.show = "hold",
+  eval = TRUE
+)
+```
+
+\newcommand{\var}{\mathrm{Var}}
+\newcommand{\cov}{\mathrm{Cov}}
+\newcommand{\corr}{\mathrm{Corr}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\pr}{\mathrm{P}}
+
+1.
+2. (Cryer & Chan, Exercise 10.9)
+    a. A plot of the original time series is shown below:
+    ```{r}
+    data(airpass)
+    plot(airpass, type = "o")
+    ```
+    This plot shows that the time series is clearly non-stationary. In
+    particular, it has non-constant mean, and the series grows more variable
+    with time. After taking logarithms, we get the following:
+    ```{r}
+    plot(log(airpass), type = "o")
+    ```
+    Although this transformed series appears to still have non-constant mean,
+    the series no longer appears to be getting more variable with time. Thus the
+    transformation seems appropriate.
+    
+    b. After taking first differences of the log-transformed series, we get the
+    following:
+    ```{r}
+    first_diff <- diff(log(airpass))
+    plot(first_diff, type = "o")
+    ```
+    This new series appears to be stationary (in particular, it has taken care
+    of the issue of non-constant mean in the undifferenced series). However,
+    there still appears to be seasonality in the series.
+    
+    c. It seems reasonable to expect a seasonality of $s = 12$. Taking seasonal
+    differences with $s = 12$, we get the following:
+    ```{r}
+    seasonal_diff <- diff(first_diff, lag = 12)
+    plot(seasonal_diff, type = "o")
+    ```
+    The seasonal differencing appears to have removed the seasonality in the
+    series.
+    
+    d. A plot of the sample ACF of the seasonal difference of the first
+    difference of the log-transformed series is as follows:
+    ```{r}
+    acf(as.vector(seasonal_diff))
+    ```
+    The ACF is statistically significant from zero at lag 1, and then (with a
+    few exceptions), is zero for higher lags. This suggests that this
+    transformed series *may* be suitably modeled by an MA(1) process.
+    
+    e. The following fits an ARIMA$(0, 1, 1) \times (0, 1, 1)_{12}$ model to the
+    log-transformed series:
+    ```{r}
+    fit <- arima(log(airpass), order = c(0, 1, 1),
+                 seasonal = list(order = c(0, 1, 1)))
+    fit
+    ```
+
+    f.
+
+3.
+4. (Cryer & Chan, Exercise 13.13)
+5. (Cryer & Chan, Exercise 13.17)
+6. (Cryer & Chan, Exercise 13.21)
+7. (Cryer & Chan, Exercise 12.9)
