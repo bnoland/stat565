@@ -7,8 +7,9 @@ fontsize: 12pt
 
 ```{r setup, include = FALSE}
 library(TSA)
+library(tseries)
 
-#options(digits = 3)
+options(digits = 3)
 
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -30,60 +31,236 @@ knitr::opts_chunk$set(
 1.
 2. (Cryer & Chan, Exercise 10.9)
     a. A plot of the original time series is shown below:
-    ```{r}
-    data(airpass)
-    plot(airpass, type = "o")
-    ```
-    This plot shows that the time series is clearly non-stationary. In
-    particular, it has non-constant mean, and the series grows more variable
-    with time. After taking logarithms, we get the following:
-    ```{r}
-    plot(log(airpass), type = "o")
-    ```
-    Although this transformed series appears to still have non-constant mean,
-    the series no longer appears to be getting more variable with time. Thus the
-    transformation seems appropriate.
+        ```{r}
+        data(airpass)
+        plot(airpass, type = "o")
+        ```
+        This plot shows that the time series is clearly non-stationary. In
+        particular, it has non-constant mean, and the series grows more variable
+        with time. After taking logarithms, we get the following:
+        ```{r}
+        plot(log(airpass), type = "o")
+        ```
+        Although this transformed series appears to still have non-constant
+        mean, the series no longer appears to be getting more variable with
+        time. Thus the transformation seems appropriate.
     
     b. After taking first differences of the log-transformed series, we get the
     following:
-    ```{r}
-    first_diff <- diff(log(airpass))
-    plot(first_diff, type = "o")
-    ```
-    This new series appears to be stationary (in particular, it has taken care
-    of the issue of non-constant mean in the undifferenced series). However,
-    there still appears to be seasonality in the series.
-    
+        ```{r}
+        first_diff <- diff(log(airpass))
+        plot(first_diff, type = "o")
+        ```
+        This new series appears to be stationary (in particular, it has taken
+        care of the issue of non-constant mean in the undifferenced series).
+        However, there still appears to be seasonality in the series.
+        
     c. It seems reasonable to expect a seasonality of $s = 12$. Taking seasonal
     differences with $s = 12$, we get the following:
-    ```{r}
-    seasonal_diff <- diff(first_diff, lag = 12)
-    plot(seasonal_diff, type = "o")
-    ```
-    The seasonal differencing appears to have removed the seasonality in the
-    series.
+        ```{r}
+        seasonal_diff <- diff(first_diff, lag = 12)
+        plot(seasonal_diff, type = "o")
+        ```
+        The seasonal differencing appears to have removed the seasonality in the
+        series.
     
     d. A plot of the sample ACF of the seasonal difference of the first
     difference of the log-transformed series is as follows:
-    ```{r}
-    acf(as.vector(seasonal_diff))
-    ```
-    The ACF is statistically significant from zero at lag 1, and then (with a
-    few exceptions), is zero for higher lags. This suggests that this
-    transformed series *may* be suitably modeled by an MA(1) process.
+        ```{r}
+        acf(as.vector(seasonal_diff))
+        ```
+        The ACF is statistically significant from zero at lag 1, and then (with
+        a few exceptions), is zero for higher lags. This suggests that this
+        transformed series *may* be suitably modeled by an MA(1) process.
     
     e. The following fits an ARIMA$(0, 1, 1) \times (0, 1, 1)_{12}$ model to the
     log-transformed series:
-    ```{r}
-    fit <- arima(log(airpass), order = c(0, 1, 1),
-                 seasonal = list(order = c(0, 1, 1)))
-    fit
-    ```
+        ```{r}
+        fit <- arima(log(airpass), order = c(0, 1, 1),
+                     seasonal = list(order = c(0, 1, 1), period = 12))
+        fit
+        ```
 
-    f.
+    <!-- TODO: May want to drop first 13 residuals in the following. -->
+    f. The following is a plot of the standardized residuals from the model:
+        ```{r}
+        plot(rstandard(fit), type = "o")
+        abline(h = 0)
+        ```
+        The residuals do not appear to be white noise. In particular, the
+        variability in the series is very high from about 1961 to 1965, and then
+        dwindles from about 1966 to 1970.
+        
+        A plot of the sample ACF of the standardized residuals is as follows:
+        ```{r}
+        acf(as.vector(rstandard(fit)), drop.lag.0 = FALSE)
+        ```
+        The values at all lags beyond lag 1 are zero, providing evidence that
+        the residuals may in fact be white noise.
+        
+        Plots for assessing normality of the residuals are shown below:
+        ```{r}
+        old_par <- par(mfrow = c(1, 2))
+        hist(rstandard(fit))
+        qqnorm(rstandard(fit))
+        qqline(rstandard(fit))
+        par(old_par)
+        ```
+        The normal Q-Q plot seems to deviate from linearity in the tails,
+        providing some evidence against normality of the residuals. The results
+        of the Shapiro-Wilk test applied to the residuals are as follows:
+        ```{r}
+        shapiro.test(rstandard(fit))
+        ```
+        Thus, according to Shapiro-Wilk, we fail to reject normality of the
+        residuals at the usual levels.
+    
+    g. The following plots forecasts for the next two years after the series
+    ends, along with pointwise forecase limits:
+        ```{r}
+        plot(fit, n1 = 1971, n.ahead = 24)
+        ```
+        The forecasts continue the seasonal trend of the original time series.
+        As should be expected, the pointwise confidence limits get larger as
+        lead time increases.
 
 3.
-4. (Cryer & Chan, Exercise 13.13)
-5. (Cryer & Chan, Exercise 13.17)
-6. (Cryer & Chan, Exercise 13.21)
+    a. The following plots the periodogram of the series in question:
+        ```{r}
+        periodogram(seasonal_diff)
+        ```
+
+    b. Assuming the fitted model is correct, the series in question is
+    ARMA$(0, 1) \times (0, 1)_{12}$. Using the coefficient estimates from the
+    fitted model, the estimated spectral density of the series is as follows:
+        ```{r}
+        ma1 <- coef(fit)[["ma1"]]
+        sma1 <- coef(fit)[["sma1"]]
+        ARMAspec(model = list(ma = ma1,
+                              seasonal = list(sma = sma1, period = 12)))
+        ```
+
+    c. The plots from part (a) and part (b) are both very similar, suggesting
+    that the series in question does in fact follow an ARMA$(0, 1) \times (0,
+    1)_{12}$ with coefficients approximately equal to the estimates from the
+    fitted model.
+
+4. (Cryer & Chan, Exercise 13.13) The theoretical spectral density of an AR(1)
+model with $\phi = 0.7$ is as follows:
+    ```{r}
+    ARMAspec(model = list(ar = 0.7))
+    ```
+    Thus the spectral representation consists primarily of low-frequency terms.
+    Thus we would expect the series to consistently hang above or below its mean
+    for a number of consecutive lags.
+
+5. (Cryer & Chan, Exercise 13.17) The theoretical spectral density of an AR(2)
+model with $\phi_1 = -0.1$ and $\phi_2 = -0.9$ is as follows:
+    ```{r}
+    ARMAspec(model = list(ar = c(-0.1, -0.9)))
+    ```
+    Most of the frequences in the spectral representation of the process are
+    concentrated around 0.25. Thus we expect the process to exhibit an
+    approximately sinusoidal behavior with an approximate frequency of 0.25.
+
+6. (Cryer & Chan, Exercise 13.21) The theoretical spectral density of an AR(2)
+model with $\phi_1 = 0$ and $\phi_2 = 0.8$ is as follows:
+    ```{r}
+    ARMAspec(model = list(ar = c(0, 0.8)))
+    ```
+    Thus the spectral representation of the process consists mainly of extremely
+    low and extremely high frequencies. Thus we should expect the process to
+    occasionally hang above or below its mean value, and occasionally to make
+    giant leaps across it.
+
 7. (Cryer & Chan, Exercise 12.9)
+    a. The time series is displayed below:
+        ```{r}
+        data(google)
+        plot(google, type = "l")
+        ```
+        The series appears to be approximately stationary. The following are
+        plots of the sample ACF and PACF of the series, respectively:
+        ```{r}
+        acf(google)
+        pacf(google)
+        ```
+        These plots suggest that there is no significant autocorrelation in the
+        series.
+    
+    b. The mean of the series is approximately `r mean(google)`, with
+    approximate standard error `r sd(google) / sqrt(length(google))`, and thus
+    the mean of the series is statistically different from zero.
+    
+    <!-- -->
+    d. The following is the sample EACF for the squared returns:
+        ```{r}
+        eacf(google^2)
+        ```
+        This suggests that a GARCH(1, 1) model may be appropriate. The following
+        fits this model to the series of squared returns:
+        ```{r}
+        fit <- garch(google, order = c(1, 1))
+        ```
+        The model summary is as follows:
+        ```{r}
+        summary(fit)
+        ```
+        The following is a plot of the standardized residuals:
+        ```{r}
+        plot(residuals(fit))
+        ```
+        The residuals look very much like white noise. The following plots display
+        the sample ACF for the squares and absolute values of the residuals,
+        respectively:
+        ```{r}
+        acf(residuals(fit)^2, na.action = na.omit)
+        acf(abs(residuals(fit)), na.action = na.omit)
+        ```
+        These plots together suggest that the residuals are independent. Finally, we
+        assess normality of the residuals using the following plots:
+        ```{r}
+        old_par <- par(mfrow = c(1, 2))
+        hist(residuals(fit))
+        qqnorm(residuals(fit))
+        qqline(residuals(fit))
+        par(old_par)
+        ```
+        The residuals appear to deviate from normality, as indicated by the
+        non-linearity in the tails of the normal Q-Q plot. In addition, the
+        Shapiro-Wilk test yields the following when applied to the residuals:
+        ```{r}
+        shapiro.test(residuals(fit))
+        ```
+        Thus we reject the null hypothesis of normality of the residuals at the
+        usual levels.
+    
+    e. The following is a plot of the conditional variances estimated by the
+    model:
+        ```{r}
+        plot(fitted(fit)[,1]^2, type = "l", ylab = "Conditional variance")
+        ```
+        Here we see several large spikes indicating periods of high-volatility
+        in the returns. In addition, the estimated conditional variance remains
+        relatively high for a modest time period after the third large spike
+        (i.e., the time period roughly after day 360).
+    
+    f. The normal Q-Q plot of the standardized residuals was computed in part
+    (d). The non-normality of the residuals may result in a less accurate
+    confidence intervals for the model coefficients.
+
+    g. From the summary of the model fit, we have the estimate $\hat{\beta}
+    \approx 0.787$ of $\beta$, with standard error $\mathrm{SE} \approx 0.0358$.
+    Thus an approximate 95\% confidence interval for $\beta$ is $\hat{\beta} \pm
+    2\mathrm{SE}$, or approximately (0.715, 0.859).
+
+    h. The stationary mean is zero, which is very close to the sample mean of
+    `r mean(google)`. The stationary variance is
+    approximately
+    $$\frac{\hat{\omega}}{1 - \hat{\alpha} - \hat{\beta}}
+      \approx 5.82 \times 10^{-4},$$
+    where $\hat{\omega}, \hat{\alpha}$, and $\hat{\beta}$ are the coefficient
+    estimates from the model fit. This is very close to the sample variance of
+    $`r var(google)`$.
+
+    i.
