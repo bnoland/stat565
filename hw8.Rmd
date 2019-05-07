@@ -29,6 +29,28 @@ knitr::opts_chunk$set(
 \newcommand{\pr}{\mathrm{P}}
 
 1.
+    a. The model specification can be written as
+    $$Y_t - Y_{t-4} = 0.5(Y_{t-1} - Y_{t-5}) + e_t - 0.3e_{t-1},$$
+    or equivalently as
+    $$\nabla_4 Y_t = 0.5\nabla_4 Y_{t-1} + e_t - 0.3e_{t-1}.$$
+    The process $\{Y_t\}$ is therefore easily seen to be ARIMA$(1, 0, 1) \times
+    (0, 1, 0)_4$.
+    
+    b. The model specification can be written as
+    $$(Y_t - Y_{t-12}) - (Y_{t-1} - Y_{t-13})
+      = e_t - 0.5e_{t-1} - 0.5e_{t-2} + 0.25e_{t-13}$$
+    or equivalently as
+    $$\nabla_{12} Y_t - \nabla_{12} Y_{t-1}
+      = e_t - 0.5e_{t-1} - 0.5e_{t-2} + 0.25e_{t-13}$$
+    This in turn is equivalent to
+    $$\nabla \nabla_{12} Y_t = e_t - 0.5e_{t-1} - 0.5e_{t-2} + 0.25e_{t-13}.$$
+    Note that the MA characteristic polynomial of this differenced series can be
+    factored as
+    $$1 - 0.5x - 0.5x^{12} + 0.25x^{13}
+      = (1 - 0.5x^{12})(1 - 0.5x)
+      = \Theta(x) \theta(x).$$
+    The process $\{Y_t\}$ is therefore ARIMA$(0, 1, 1) \times (0, 1, 1)_{12}$.
+
 2. (Cryer & Chan, Exercise 10.9)
     a. A plot of the original time series is shown below:
         ```{r}
@@ -199,7 +221,7 @@ model with $\phi_1 = 0$ and $\phi_2 = 0.8$ is as follows:
         ```
         This suggests that a GARCH(1, 1) model may be appropriate. The following
         fits this model to the series of squared returns:
-        ```{r}
+        ```{r, results = FALSE}
         fit <- garch(google, order = c(1, 1))
         ```
         The model summary is as follows:
