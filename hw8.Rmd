@@ -89,7 +89,7 @@ knitr::opts_chunk$set(
     d. A plot of the sample ACF of the seasonal difference of the first
     difference of the log-transformed series is as follows:
         ```{r}
-        acf(as.vector(seasonal_diff))
+        acf(as.vector(seasonal_diff), main = NULL)
         ```
         The ACF is statistically significant from zero at lag 1, and then (with
         a few exceptions), is zero for higher lags. This suggests that this
@@ -102,11 +102,11 @@ knitr::opts_chunk$set(
                      seasonal = list(order = c(0, 1, 1), period = 12))
         fit
         ```
-
-    <!-- TODO: May want to drop first 13 residuals in the following. -->
+    
     f. The following is a plot of the standardized residuals from the model:
         ```{r}
-        plot(rstandard(fit), type = "o")
+        resid <- window(rstandard(fit), start = c(1961, 2))
+        plot(resid, type = "o")
         abline(h = 0)
         ```
         The residuals do not appear to be white noise. In particular, the
@@ -115,7 +115,7 @@ knitr::opts_chunk$set(
         
         A plot of the sample ACF of the standardized residuals is as follows:
         ```{r}
-        acf(as.vector(rstandard(fit)), drop.lag.0 = FALSE)
+        acf(as.vector(resid), drop.lag.0 = FALSE)
         ```
         The values at all lags beyond lag 1 are zero, providing evidence that
         the residuals may in fact be white noise.
@@ -123,16 +123,17 @@ knitr::opts_chunk$set(
         Plots for assessing normality of the residuals are shown below:
         ```{r}
         old_par <- par(mfrow = c(1, 2))
-        hist(rstandard(fit))
-        qqnorm(rstandard(fit))
-        qqline(rstandard(fit))
+        hist(resid)
+        qqnorm(resid)
+        qqline(resid)
         par(old_par)
         ```
-        The normal Q-Q plot seems to deviate from linearity in the tails,
-        providing some evidence against normality of the residuals. The results
-        of the Shapiro-Wilk test applied to the residuals are as follows:
+        The normal Q-Q plot seems to deviate from linearity a bit in the tails,
+        providing *some* evidence against normality of the residuals. The
+        results of the Shapiro-Wilk test applied to the residuals are as
+        follows:
         ```{r}
-        shapiro.test(rstandard(fit))
+        shapiro.test(resid)
         ```
         Thus, according to Shapiro-Wilk, we fail to reject normality of the
         residuals at the usual levels.
@@ -192,8 +193,8 @@ model with $\phi_1 = 0$ and $\phi_2 = 0.8$ is as follows:
     ```
     Thus the spectral representation of the process consists mainly of extremely
     low and extremely high frequencies. Thus we should expect the process to
-    occasionally hang above or below its mean value, and occasionally to make
-    giant leaps across it.
+    occasionally hang above or below its mean value, and occasionally make giant
+    leaps across it.
 
 7. (Cryer & Chan, Exercise 12.9)
     a. The time series is displayed below:
@@ -204,8 +205,8 @@ model with $\phi_1 = 0$ and $\phi_2 = 0.8$ is as follows:
         The series appears to be approximately stationary. The following are
         plots of the sample ACF and PACF of the series, respectively:
         ```{r}
-        acf(google)
-        pacf(google)
+        acf(google, main = "ACF")
+        pacf(google, main = "PACF")
         ```
         These plots suggest that there is no significant autocorrelation in the
         series.
@@ -236,8 +237,10 @@ model with $\phi_1 = 0$ and $\phi_2 = 0.8$ is as follows:
         the sample ACF for the squares and absolute values of the residuals,
         respectively:
         ```{r}
-        acf(residuals(fit)^2, na.action = na.omit)
-        acf(abs(residuals(fit)), na.action = na.omit)
+        acf(residuals(fit)^2, na.action = na.omit,
+            main = "Squared residuals")
+        acf(abs(residuals(fit)), na.action = na.omit,
+            main = "Absolute residuals")
         ```
         These plots together suggest that the residuals are independent. Finally, we
         assess normality of the residuals using the following plots:
@@ -268,7 +271,7 @@ model with $\phi_1 = 0$ and $\phi_2 = 0.8$ is as follows:
         (i.e., the time period roughly after day 360).
     
     f. The normal Q-Q plot of the standardized residuals was computed in part
-    (d). The non-normality of the residuals may result in a less accurate
+    (d). The non-normality of the residuals may result in less reliable
     confidence intervals for the model coefficients.
 
     g. From the summary of the model fit, we have the estimate $\hat{\beta}
@@ -284,5 +287,3 @@ model with $\phi_1 = 0$ and $\phi_2 = 0.8$ is as follows:
     where $\hat{\omega}, \hat{\alpha}$, and $\hat{\beta}$ are the coefficient
     estimates from the model fit. This is very close to the sample variance of
     $`r var(google)`$.
-
-    i.
